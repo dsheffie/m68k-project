@@ -1,0 +1,55 @@
+site_name: Project m68k
+site_description: "A 68040 on an out-of-order core: the uisa micro-op ISA, its millicode and compiler, the core, and the q800sim reference simulator."
+site_url: https://dsheffie.github.io/m68k-project/
+docs_dir: docs
+
+theme:
+  name: material
+  icon:
+    logo: material/chip
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - navigation.tracking
+    - toc.follow
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+markdown_extensions:
+  - tables
+  - admonition
+  - attr_list
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+
+# docs/uisa/{rationale,reference,flows,ucc,softfloat}.md and docs/uisa/uisa.pdf are not in
+# this repo: tools/pull_uisa.sh generates them from a uisa checkout.
+nav:
+  - Overview: index.md
+  - The core: core.md
+  - q800sim: q800sim.md
+  - uisa:
+      - uisa/index.md
+      - Design rationale: uisa/rationale.md
+      - Reference: uisa/reference.md
+      - PLA flow coverage: uisa/flows.md
+      - The ucc compiler: uisa/ucc.md
+      - SoftFloat in millicode: uisa/softfloat.md

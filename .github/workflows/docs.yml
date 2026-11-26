@@ -1,0 +1,55 @@
+name: docs
+
+# Build the site (uisa's docs regenerated from the uisa repo) and publish it to
+# the `gh-pages` branch with `mkdocs gh-deploy`.
+# One-time setup: Settings -> Pages -> Source = "Deploy from a branch" ->
+# branch `gh-pages` / `/ (root)`.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 9 * * *'   # daily, so uisa doc changes show up without a push here
+  workflow_dispatch:
+
+permissions:
+  contents: write          # mkdocs gh-deploy pushes the gh-pages branch
+
+concurrency:
+  group: docs
+  cancel-in-progress: true
+
+env:
+  UISA_REF: wip/m68k-fp1   # main once gen_pdf.py is there
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/checkout@v4
+        with:
+          repository: dsheffie/uisa
+          ref: ${{ env.UISA_REF }}
+          path: uisa
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install TeX, mkdocs + Material
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-base texlive-latex-recommended texlive-latex-extra \
+            texlive-pictures texlive-fonts-recommended
+          pip install pyyaml "mkdocs<2" mkdocs-material
+
+      - name: Regenerate uisa docs
+        run: sh tools/pull_uisa.sh uisa
+
+      - name: Build & deploy to gh-pages
+        run: mkdocs gh-deploy --force --strict
