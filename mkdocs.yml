@@ -45,10 +45,12 @@ markdown_extensions:
 
 # docs/uisa/{rationale,reference,flows,ucc,softfloat}.md and docs/uisa/uisa.pdf are not in
 # this repo: tools/pull_uisa.sh generates them from a uisa checkout.
+# docs/formal-spec.md comes from tools/pull_formal_spec.sh and m68k-formal-spec.
 nav:
   - Overview: index.md
   - The core: core.md
   - q800sim: q800sim.md
+  - Formal spec: formal-spec.md
   - uisa:
       - uisa/index.md
       - Design rationale: uisa/rationale.md

@@ -1,6 +1,7 @@
 name: docs
 
-# Build the site (uisa's docs regenerated from the uisa repo) and publish it to
+# Build the site (uisa's docs regenerated from the uisa repo, the formal
+# spec page from m68k-formal-spec's READMEs) and publish it to
 # the `gh-pages` branch with `mkdocs gh-deploy`.
 # One-time setup: Settings -> Pages -> Source = "Deploy from a branch" ->
 # branch `gh-pages` / `/ (root)`.
@@ -36,6 +37,11 @@ jobs:
           ref: ${{ env.UISA_REF }}
           path: uisa
 
+      - uses: actions/checkout@v4
+        with:
+          repository: dsheffie/m68k-formal-spec
+          path: m68k-formal-spec
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
@@ -50,6 +56,9 @@ jobs:
 
       - name: Regenerate uisa docs
         run: sh tools/pull_uisa.sh uisa
+
+      - name: Pull the formal spec's READMEs
+        run: sh tools/pull_formal_spec.sh m68k-formal-spec
 
       - name: Build & deploy to gh-pages
         run: mkdocs gh-deploy --force --strict

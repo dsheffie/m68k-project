@@ -21,8 +21,10 @@ take the PLA path (see [PLA flow coverage](uisa/flows.md)).
 | [uisa](uisa/index.md) | The micro-op ISA, defined in one YAML file; generators for the decoder, ISS, assembler and manual; the 68040 translation (PLA flows); millicode; the ucc compiler | [Manual (PDF)](uisa/uisa.pdf){ .md-button .md-button--primary } [Reference (web)](uisa/reference.md){ .md-button } |
 | [The core](core.md) | The out-of-order RTL core that executes uisa | [Overview](core.md) |
 | [q800sim](q800sim.md) | A functional Quadra 800 (68040) full-system simulator; the golden reference for uisa and the RTL, and a host for running uisa on real software | [Overview](q800sim.md) |
+| [Formal spec](formal-spec.md) | Boyer and Yu's MC68020 specification in Nqthm, lifted to SMT-LIB for z3; planned for proving the PLA templates implement each 68k instruction (in progress) | [Overview](formal-spec.md) |
 
 ## Source
 
 - uisa: [github.com/dsheffie/uisa](https://github.com/dsheffie/uisa)
+- Formal spec: [github.com/dsheffie/m68k-formal-spec](https://github.com/dsheffie/m68k-formal-spec)
 - The core and q800sim are not public yet.
