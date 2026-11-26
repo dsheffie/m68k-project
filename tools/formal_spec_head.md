@@ -5,6 +5,9 @@ instructions, for checking the core's translation of them. It is Robert S.
 Boyer and Yuan Yu's MC68020 specification in Nqthm (public domain), run
 directly in Python and lifted from there to SMT-LIB for z3.
 
+**Background:** [how the 1992 semantics worked, why SMT, and reusing the
+semantics under a different modelling approach](background.md).
+
 **Repository:** [github.com/dsheffie/m68k-formal-spec](https://github.com/dsheffie/m68k-formal-spec)
 
 **Original sources:**
@@ -18,9 +21,9 @@ directly in Python and lifted from there to SMT-LIB for z3.
 
 ## How it fits the project
 
-The core executes 68k instructions as [uisa](uisa/index.md) micro-ops, and
+The core executes 68k instructions as [uisa](../uisa/index.md) micro-ops, and
 the common ones go through PLA templates
-([PLA flow coverage](uisa/flows.md)). The planned use of this spec is a z3
+([PLA flow coverage](../uisa/flows.md)). The planned use of this spec is a z3
 proof, for each 68k instruction, that its PLA template computes exactly what
 the spec says: the same registers, condition codes, PC and memory for every
 input. That proof is in progress and not done yet; what exists today is the

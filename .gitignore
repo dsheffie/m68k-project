@@ -1,4 +1,4 @@
 site/
 docs/uisa/*
 !docs/uisa/index.md
-docs/formal-spec.md
+docs/formal-spec/
