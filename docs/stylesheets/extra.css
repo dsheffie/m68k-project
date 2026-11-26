@@ -1,0 +1,8 @@
+/* Material lets inline code break between any two characters, which splits
+   short expressions in table cells (the uisa reference's Semantics column)
+   mid-token. Wrap code in tables only at spaces. */
+.md-typeset table:not([class]) td code {
+  word-break: normal;
+  overflow-wrap: normal;
+  white-space: pre-wrap;
+}
