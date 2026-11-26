@@ -1,0 +1,3426 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A 68040 on an out-of-order core: the uisa micro-op ISA, its millicode and compiler, the core, and the q800sim reference simulator.">
+      
+      
+      
+        <link rel="canonical" href="https://dsheffie.github.io/m68k-project/uisa/reference/">
+      
+      
+        <link rel="prev" href="../rationale/">
+      
+      
+        <link rel="next" href="../flows/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
+    
+    
+      
+        <title>Reference - Project m68k</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#reference-generated" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Project m68k" class="md-header__button md-logo" aria-label="Project m68k" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Project m68k
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Project m68k" class="md-nav__button md-logo" aria-label="Project m68k" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    Project m68k
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../q800sim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    q800sim
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    uisa
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    uisa
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rationale/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design rationale
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#register-namespace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Register namespace
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flags
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Formats
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#major-opcode-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Major opcode map
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#base-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Base operations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#guest-semantic-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guest-semantic operations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Guest-semantic operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#guest-op-semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guest-op semantics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conditions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#memory-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory operations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#control-and-status-registers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Control and status registers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#millicode-entry-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Millicode entry points
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../flows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PLA flow coverage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ucc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The ucc compiler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../softfloat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SoftFloat in millicode
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#register-namespace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Register namespace
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flags
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Formats
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#major-opcode-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Major opcode map
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#base-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Base operations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#guest-semantic-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guest-semantic operations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Guest-semantic operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#guest-op-semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guest-op semantics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conditions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#memory-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory operations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#control-and-status-registers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Control and status registers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#millicode-entry-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Millicode entry points
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="reference-generated">Reference (generated)<a class="headerlink" href="#reference-generated" title="Permanent link">&para;</a></h1>
+<p>Spec version <strong>0.1-draft</strong>. 749 concrete instruction variants.</p>
+<h2 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>xlen</code></td>
+<td>32</td>
+</tr>
+<tr>
+<td><code>ilen</code></td>
+<td>32</td>
+</tr>
+<tr>
+<td><code>endian</code></td>
+<td>big</td>
+</tr>
+<tr>
+<td><code>call_stack_depth</code></td>
+<td>4</td>
+</tr>
+<tr>
+<td><code>reg_spec_bits</code></td>
+<td>6</td>
+</tr>
+<tr>
+<td><code>hidden_base</code></td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><code>hidden_size</code></td>
+<td>TBD</td>
+</tr>
+</tbody>
+</table>
+<h2 id="register-namespace">Register namespace<a class="headerlink" href="#register-namespace" title="Permanent link">&para;</a></h2>
+<p>Register specifiers are 6 bits. Indices not listed are reserved.</p>
+<table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Names</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0-31</td>
+<td><code>x0</code>-<code>x31</code></td>
+<td>Millicode general registers. x0 reads as zero and ignores writes. Not preserved across gexit.</td>
+</tr>
+<tr>
+<td>32-39</td>
+<td><code>d0</code>-<code>d7</code></td>
+<td>Guest data registers D0-D7.</td>
+</tr>
+<tr>
+<td>40-47</td>
+<td><code>a0</code>-<code>a7</code></td>
+<td>Guest address registers A0-A7. a7 is the active stack pointer; the inactive USP/ISP/MSP live in CSRs.</td>
+</tr>
+<tr>
+<td>48</td>
+<td><code>gpc</code></td>
+<td>Guest PC. Holds the current instruction's address on millicode entry; millicode writes the next PC before gexit.</td>
+</tr>
+<tr>
+<td>49</td>
+<td><code>gsr</code></td>
+<td>Guest SR system byte (T1 T0 S M - I2 I1 I0) in bits 15:8. The CCR byte lives in the renamed flags, not here.</td>
+</tr>
+</tbody>
+</table>
+<p>FP registers are a namespace of their own, 64 bits each, named only by the register fields an FP op lists as FP (the Operands column marks them <code>f:</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Names</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0-7</td>
+<td><code>f0</code>-<code>f7</code></td>
+<td>The guest's FP0-FP7, held as IEEE doubles (the 68881's 80-bit values are converted at the memory boundary: FMOVE.X, FMOVEM.X).</td>
+</tr>
+<tr>
+<td>8-15</td>
+<td><code>f8</code>-<code>f15</code></td>
+<td>Millicode FP temporaries f8-f15. Not preserved across gexit.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="flags">Flags<a class="headerlink" href="#flags" title="Permanent link">&para;</a></h2>
+<p>3 renamed flag resources: <code>nzvc</code> (N Z V C), <code>x</code> (X), <code>u</code> (U).
+<code>rdccr</code>/<code>wrccr</code> use the 68k CCR layout: X=bit 4, N=bit 3, Z=bit 2, V=bit 1, C=bit 0.
+<code>u</code>: the millicode-private predicate, never guest-visible and not in the CCR layout (<code>rdccr</code>/<code>wrccr</code> do not touch it). Probes <code>.us</code>/<code>.ua</code> write it (the probed access would succeed: <code>(!tce &amp;&amp; mmusr == 0) || (((mmusr &amp; 3) != 0) &amp;&amp; !((mmusr &gt;&gt; 11) &amp; 1) &amp;&amp; !(w &amp;&amp; ((mmusr &gt;&gt; 2) &amp; 1)) &amp;&amp; !(user &amp;&amp; ((mmusr &gt;&gt; 7) &amp; 1)))</code>, from the MMUSR result <code>mmusr</code>, <code>w</code> for a write probe, <code>user</code> for a user-mode access and <code>tce</code> for TC.E: with translation off and no TTR match the MMUSR is 0 and the access succeeds); <code>ld.c</code>, <code>st.c</code>, <code>stu.c</code>, <code>b.u</code> and <code>b.nu</code> read it.</p>
+<h2 id="formats">Formats<a class="headerlink" href="#formats" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Fields (msb to lsb)</th>
+<th>Immediate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R</td>
+<td><code>op[31:26]</code> <code>rd[25:20]</code> <code>rs1[19:14]</code> <code>rs2[13:8]</code> <code>fn[7:0]</code></td>
+<td></td>
+</tr>
+<tr>
+<td>I</td>
+<td><code>op[31:26]</code> <code>rd[25:20]</code> <code>rs1[19:14]</code> <code>imm[13:0]</code></td>
+<td>signed</td>
+</tr>
+<tr>
+<td>U</td>
+<td><code>op[31:26]</code> <code>rd[25:20]</code> <code>imm[19:0]</code></td>
+<td>unsigned</td>
+</tr>
+<tr>
+<td>J</td>
+<td><code>op[31:26]</code> <code>rd[25:20]</code> <code>imm[19:0]</code></td>
+<td>signed, x4</td>
+</tr>
+<tr>
+<td>L</td>
+<td><code>op[31:26]</code> <code>imm[25:0]</code></td>
+<td>signed, x4</td>
+</tr>
+<tr>
+<td>B</td>
+<td><code>op[31:26]</code> <code>rs1[25:20]</code> <code>rs2[19:14]</code> <code>cond[13:11]</code> <code>imm[10:0]</code></td>
+<td>signed, x4</td>
+</tr>
+<tr>
+<td>C</td>
+<td><code>op[31:26]</code> <code>cond[25:22]</code> <code>imm[21:0]</code></td>
+<td>signed, x4</td>
+</tr>
+<tr>
+<td>G</td>
+<td><code>op[31:26]</code> <code>rd[25:20]</code> <code>rs1[19:14]</code> <code>rs2[13:8]</code> <code>fn[7:2]</code> <code>sz[1:0]</code></td>
+<td></td>
+</tr>
+<tr>
+<td>GI</td>
+<td><code>op[31:26]</code> <code>rd[25:20]</code> <code>rs1[19:14]</code> <code>fn[13:8]</code> <code>sz[7:6]</code> <code>imm[5:0]</code></td>
+<td>unsigned</td>
+</tr>
+<tr>
+<td>M</td>
+<td><code>op[31:26]</code> <code>rd[25:20]</code> <code>rs1[19:14]</code> <code>sp[13:12]</code> <code>imm[11:0]</code></td>
+<td>signed</td>
+</tr>
+<tr>
+<td>MP</td>
+<td><code>op[31:26]</code> <code>rd[25:20]</code> <code>rs1[19:14]</code> <code>sp[13:12]</code> <code>um[11:10]</code> <code>imm[9:0]</code></td>
+<td>signed</td>
+</tr>
+<tr>
+<td>MCL</td>
+<td><code>op[31:26]</code> <code>rd[25:20]</code> <code>rs1[19:14]</code> <code>sp[13:12]</code> <code>lk[11:9]</code> <code>imm[8:0]</code></td>
+<td>signed</td>
+</tr>
+<tr>
+<td>MCS</td>
+<td><code>op[31:26]</code> <code>rd[25:20]</code> <code>rs1[19:14]</code> <code>sp[13:12]</code> <code>sz[11:10]</code> <code>ul[9:9]</code> <code>imm[8:0]</code></td>
+<td>signed</td>
+</tr>
+<tr>
+<td>MW</td>
+<td><code>op[31:26]</code> <code>rd[25:20]</code> <code>rs1[19:14]</code> <code>rs2[13:8]</code> <code>sp[7:6]</code> <code>imm[5:0]</code></td>
+<td>signed</td>
+</tr>
+<tr>
+<td>MC</td>
+<td><code>op[31:26]</code> <code>rd[25:20]</code> <code>rs1[19:14]</code> <code>rs2[13:8]</code> <code>sp[7:6]</code> <code>sz[5:4]</code> <code>imm[3:0]</code></td>
+<td>signed</td>
+</tr>
+<tr>
+<td>S</td>
+<td><code>op[31:26]</code> <code>rd[25:20]</code> <code>rs1[19:14]</code> <code>fn[13:8]</code> <code>imm[7:0]</code></td>
+<td>unsigned</td>
+</tr>
+<tr>
+<td>BFI</td>
+<td><code>op[31:26]</code> <code>rd[25:20]</code> <code>rs1[19:14]</code> <code>fn[13:12]</code> <code>f[11:11]</code> <code>off[10:6]</code> <code>wid[5:1]</code> <code>rsv[0:0]</code></td>
+<td></td>
+</tr>
+<tr>
+<td>CG</td>
+<td><code>op[31:26]</code> <code>cond[25:22]</code> <code>imm[21:0]</code></td>
+<td>signed</td>
+</tr>
+<tr>
+<td>BG</td>
+<td><code>op[31:26]</code> <code>rs1[25:20]</code> <code>cond[19:19]</code> <code>imm[18:0]</code></td>
+<td>signed</td>
+</tr>
+</tbody>
+</table>
+<p>Base ops can override immediate signedness (e.g. logical immediates are zero-extended).</p>
+<h2 id="major-opcode-map">Major opcode map<a class="headerlink" href="#major-opcode-map" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>+0</th>
+<th>+1</th>
+<th>+2</th>
+<th>+3</th>
+<th>+4</th>
+<th>+5</th>
+<th>+6</th>
+<th>+7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>0</strong></td>
+<td>ALU</td>
+<td>ADDI</td>
+<td>ANDI</td>
+<td>ORI</td>
+<td>XORI</td>
+<td>SLTI</td>
+<td>SLTIU</td>
+<td>SLLI</td>
+</tr>
+<tr>
+<td><strong>8</strong></td>
+<td>SRLI</td>
+<td>SRAI</td>
+<td>RORI</td>
+<td>LUI</td>
+<td>AUIPC</td>
+<td>JAL</td>
+<td>JALR</td>
+<td>CALL</td>
+</tr>
+<tr>
+<td><strong>16</strong></td>
+<td>BR</td>
+<td>BCC</td>
+<td>GOP</td>
+<td>GOPZ</td>
+<td>GOPI</td>
+<td>GOPIZ</td>
+<td>LD8U</td>
+<td>LD8S</td>
+</tr>
+<tr>
+<td><strong>24</strong></td>
+<td>LD16U</td>
+<td>LD16S</td>
+<td>LD32</td>
+<td>ST8</td>
+<td>ST16</td>
+<td>ST32</td>
+<td>LDL8</td>
+<td>LDL16</td>
+</tr>
+<tr>
+<td><strong>32</strong></td>
+<td>LDL32</td>
+<td>STU8</td>
+<td>STU16</td>
+<td>STU32</td>
+<td>PROBER</td>
+<td>PROBEW</td>
+<td>SYS</td>
+<td>BF</td>
+</tr>
+<tr>
+<td><strong>40</strong></td>
+<td>BFI</td>
+<td>GBCC</td>
+<td>GBZ</td>
+<td>GPCADDI</td>
+<td>GOPN</td>
+<td>GOPZN</td>
+<td>GOPIN</td>
+<td>GOPIZN</td>
+</tr>
+<tr>
+<td><strong>48</strong></td>
+<td>FP</td>
+<td><em>FP</em></td>
+<td><em>FP</em></td>
+<td><em>FP</em></td>
+<td><em>FP</em></td>
+<td>STC</td>
+<td>LDC</td>
+<td>CAS</td>
+</tr>
+<tr>
+<td><strong>56</strong></td>
+<td>GJR</td>
+<td>GPUSHR</td>
+<td>STPRE8</td>
+<td>STPRE16</td>
+<td>STPRE32</td>
+<td>STPOST8</td>
+<td>STPOST16</td>
+<td>STPOST32</td>
+</tr>
+</tbody>
+</table>
+<h2 id="base-operations">Base operations<a class="headerlink" href="#base-operations" title="Permanent link">&para;</a></h2>
+<p>No flags, full 32-bit results, unless the row says otherwise. Operand names: <code>a</code> = rs1, <code>b</code> = rs2 or the decoded immediate.</p>
+<table>
+<thead>
+<tr>
+<th>Mnemonic</th>
+<th>Format</th>
+<th>Encoding</th>
+<th>Operands</th>
+<th>Semantics</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>add</code></td>
+<td>R</td>
+<td>ALU fn=0</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a + b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>sub</code></td>
+<td>R</td>
+<td>ALU fn=1</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a - b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>and</code></td>
+<td>R</td>
+<td>ALU fn=2</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a &amp; b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>or</code></td>
+<td>R</td>
+<td>ALU fn=3</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a | b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>xor</code></td>
+<td>R</td>
+<td>ALU fn=4</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a ^ b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>andn</code></td>
+<td>R</td>
+<td>ALU fn=5</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a &amp; ~b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>orn</code></td>
+<td>R</td>
+<td>ALU fn=6</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a | ~b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>sll</code></td>
+<td>R</td>
+<td>ALU fn=7</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a &lt;&lt; (b &amp; 31);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>srl</code></td>
+<td>R</td>
+<td>ALU fn=8</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a &gt;&gt; (b &amp; 31);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>sra</code></td>
+<td>R</td>
+<td>ALU fn=9</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = (uint32_t)((int32_t)a &gt;&gt; (b &amp; 31));</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>rol</code></td>
+<td>R</td>
+<td>ALU fn=10</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = ROL32(a, b &amp; 31);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>ror</code></td>
+<td>R</td>
+<td>ALU fn=11</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = ROL32(a, (32 - (b &amp; 31)) &amp; 31);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>slt</code></td>
+<td>R</td>
+<td>ALU fn=12</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = (int32_t)a &lt; (int32_t)b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>sltu</code></td>
+<td>R</td>
+<td>ALU fn=13</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a &lt; b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>min</code></td>
+<td>R</td>
+<td>ALU fn=14</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = (int32_t)a &lt; (int32_t)b ? a : b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>max</code></td>
+<td>R</td>
+<td>ALU fn=15</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = (int32_t)a &gt; (int32_t)b ? a : b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>minu</code></td>
+<td>R</td>
+<td>ALU fn=16</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a &lt; b ? a : b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>maxu</code></td>
+<td>R</td>
+<td>ALU fn=17</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a &gt; b ? a : b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>mul</code></td>
+<td>R</td>
+<td>ALU fn=18</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a * b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>mulh</code></td>
+<td>R</td>
+<td>ALU fn=19</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = (uint32_t)(((int64_t)(int32_t)a * (int64_t)(int32_t)b) &gt;&gt; 32);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>mulhu</code></td>
+<td>R</td>
+<td>ALU fn=20</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = (uint32_t)(((uint64_t)a * (uint64_t)b) &gt;&gt; 32);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>div</code></td>
+<td>R</td>
+<td>ALU fn=21</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = (b == 0) ? 0xffffffffu : ((a == 0x80000000u &amp;&amp; b == 0xffffffffu) ? a : (uint32_t)((int32_t)a / (int32_t)b));</code></td>
+<td>Never faults. Division by zero returns all ones.</td>
+</tr>
+<tr>
+<td><code>divu</code></td>
+<td>R</td>
+<td>ALU fn=22</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = (b == 0) ? 0xffffffffu : a / b;</code></td>
+<td>Never faults.</td>
+</tr>
+<tr>
+<td><code>rem</code></td>
+<td>R</td>
+<td>ALU fn=23</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = (b == 0) ? a : ((a == 0x80000000u &amp;&amp; b == 0xffffffffu) ? 0 : (uint32_t)((int32_t)a % (int32_t)b));</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>remu</code></td>
+<td>R</td>
+<td>ALU fn=24</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = (b == 0) ? a : a % b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>clz</code></td>
+<td>R</td>
+<td>ALU fn=25</td>
+<td>rd, rs1</td>
+<td><code>r = a ? __builtin_clz(a) : 32;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>ctz</code></td>
+<td>R</td>
+<td>ALU fn=26</td>
+<td>rd, rs1</td>
+<td><code>r = a ? __builtin_ctz(a) : 32;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>cpop</code></td>
+<td>R</td>
+<td>ALU fn=27</td>
+<td>rd, rs1</td>
+<td><code>r = __builtin_popcount(a);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>rev8</code></td>
+<td>R</td>
+<td>ALU fn=28</td>
+<td>rd, rs1</td>
+<td><code>r = __builtin_bswap32(a);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>sext8</code></td>
+<td>R</td>
+<td>ALU fn=29</td>
+<td>rd, rs1</td>
+<td><code>r = (uint32_t)SX(a, 8);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>sext16</code></td>
+<td>R</td>
+<td>ALU fn=30</td>
+<td>rd, rs1</td>
+<td><code>r = (uint32_t)SX(a, 16);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>zext8</code></td>
+<td>R</td>
+<td>ALU fn=31</td>
+<td>rd, rs1</td>
+<td><code>r = a &amp; 0xffu;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>zext16</code></td>
+<td>R</td>
+<td>ALU fn=32</td>
+<td>rd, rs1</td>
+<td><code>r = a &amp; 0xffffu;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>czeqz</code></td>
+<td>R</td>
+<td>ALU fn=33</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = (b == 0) ? 0 : a;</code></td>
+<td>Conditional zero (branch-free select building block).</td>
+</tr>
+<tr>
+<td><code>cznez</code></td>
+<td>R</td>
+<td>ALU fn=34</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = (b != 0) ? 0 : a;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>mrg8</code></td>
+<td>R</td>
+<td>ALU fn=35</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = (a &amp; ~0xffu) | (b &amp; 0xffu);</code></td>
+<td>Explicit byte merge: upper 24 bits from rs1, low byte from rs2.</td>
+</tr>
+<tr>
+<td><code>mrg16</code></td>
+<td>R</td>
+<td>ALU fn=36</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = (a &amp; ~0xffffu) | (b &amp; 0xffffu);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>rdccr</code></td>
+<td>R</td>
+<td>ALU fn=37</td>
+<td>rd</td>
+<td><code>r = CCR_PACK(xin, nin, zin, vin, cin);</code></td>
+<td>Copy the renamed flags into a register (CCR layout). (reads nzvc+x)</td>
+</tr>
+<tr>
+<td><code>wrccr</code></td>
+<td>R</td>
+<td>ALU fn=38</td>
+<td>rs1</td>
+<td><code>CCR_UNPACK(a, X, N, Z, V, C);</code></td>
+<td>Load the renamed flags from a register (CCR layout). (writes nzvc+x)</td>
+</tr>
+<tr>
+<td><code>rdg</code></td>
+<td>R</td>
+<td>ALU fn=39</td>
+<td>rd, rs1</td>
+<td><code>r = GREG_READ(a &amp; 31);</code></td>
+<td>Read guest register g[rs1 &amp; 31] (namespace index 32 + n): D0-D7, A0-A7, gpc, gsr are 0-17. An index of 18-31 is a millicode fault (registers 50-63 are not reachable). Index is data, so rename serializes. (serializes)</td>
+</tr>
+<tr>
+<td><code>wrg</code></td>
+<td>R</td>
+<td>ALU fn=40</td>
+<td>rs1, rs2</td>
+<td><code>GREG_WRITE(a &amp; 31, b);</code></td>
+<td>Write rs2 to guest register g[rs1 &amp; 31], 0-17 as rdg; an index of 18-31 is a millicode fault and writes nothing. Serializes. (serializes)</td>
+</tr>
+<tr>
+<td><code>sh1add</code></td>
+<td>R</td>
+<td>ALU fn=42</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a + (b &lt;&lt; 1);</code></td>
+<td>Scaled-index add (68k (d8,An,Xn*2)).</td>
+</tr>
+<tr>
+<td><code>sh2add</code></td>
+<td>R</td>
+<td>ALU fn=43</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a + (b &lt;&lt; 2);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>sh3add</code></td>
+<td>R</td>
+<td>ALU fn=44</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = a + (b &lt;&lt; 3);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>bfmask</code></td>
+<td>R</td>
+<td>ALU fn=41</td>
+<td>rd, rs2</td>
+<td><code>r = BF_MASK(b);</code></td>
+<td>Mask of the 68k bitfield described by rs2 (offset in bits 4:0 from the MSB, width in bits 9:5, 0 means 32), wrapping like a register bitfield.</td>
+</tr>
+<tr>
+<td><code>sel.&lt;cc&gt;</code></td>
+<td>R</td>
+<td>ALU fn=0x40+cc</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = COND ? a : b;</code></td>
+<td>rd = cond ? rs1 : rs2, on the guest condition. cc: t f hi ls cc cs ne eq vc vs pl mi ge lt gt le. (reads nzvc)</td>
+</tr>
+<tr>
+<td><code>s.&lt;cc&gt;</code></td>
+<td>R</td>
+<td>ALU fn=0x50+cc</td>
+<td>rd</td>
+<td><code>r = COND ? 0xffffffffu : 0;</code></td>
+<td>rd = cond ? all ones : 0 (Scc building block; follow with mov.8 to merge). cc: t f hi ls cc cs ne eq vc vs pl mi ge lt gt le. (reads nzvc)</td>
+</tr>
+<tr>
+<td><code>addi</code></td>
+<td>I</td>
+<td>ADDI</td>
+<td>rd, rs1, imm</td>
+<td><code>r = a + b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>andi</code></td>
+<td>I</td>
+<td>ANDI</td>
+<td>rd, rs1, imm</td>
+<td><code>r = a &amp; b;</code></td>
+<td>Immediate is zero-extended.</td>
+</tr>
+<tr>
+<td><code>ori</code></td>
+<td>I</td>
+<td>ORI</td>
+<td>rd, rs1, imm</td>
+<td><code>r = a | b;</code></td>
+<td>Immediate is zero-extended.</td>
+</tr>
+<tr>
+<td><code>xori</code></td>
+<td>I</td>
+<td>XORI</td>
+<td>rd, rs1, imm</td>
+<td><code>r = a ^ b;</code></td>
+<td>Immediate is zero-extended.</td>
+</tr>
+<tr>
+<td><code>slti</code></td>
+<td>I</td>
+<td>SLTI</td>
+<td>rd, rs1, imm</td>
+<td><code>r = (int32_t)a &lt; (int32_t)b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>sltiu</code></td>
+<td>I</td>
+<td>SLTIU</td>
+<td>rd, rs1, imm</td>
+<td><code>r = a &lt; b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>slli</code></td>
+<td>I</td>
+<td>SLLI</td>
+<td>rd, rs1, imm</td>
+<td><code>r = a &lt;&lt; (b &amp; 31);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>srli</code></td>
+<td>I</td>
+<td>SRLI</td>
+<td>rd, rs1, imm</td>
+<td><code>r = a &gt;&gt; (b &amp; 31);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>srai</code></td>
+<td>I</td>
+<td>SRAI</td>
+<td>rd, rs1, imm</td>
+<td><code>r = (uint32_t)((int32_t)a &gt;&gt; (b &amp; 31));</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>rori</code></td>
+<td>I</td>
+<td>RORI</td>
+<td>rd, rs1, imm</td>
+<td><code>r = ROL32(a, (32 - (b &amp; 31)) &amp; 31);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>lui</code></td>
+<td>U</td>
+<td>LUI</td>
+<td>rd, imm</td>
+<td><code>r = b &lt;&lt; 12;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>auipc</code></td>
+<td>U</td>
+<td>AUIPC</td>
+<td>rd, imm</td>
+<td><code>r = pc + (b &lt;&lt; 12);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>jal</code></td>
+<td>J</td>
+<td>JAL</td>
+<td>rd, imm</td>
+<td><code>r = pc + 4; npc = pc + b;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>jalr</code></td>
+<td>I</td>
+<td>JALR</td>
+<td>rd, rs1, imm</td>
+<td><code>r = pc + 4; npc = (a + b) &amp; ~3u;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>call</code></td>
+<td>L</td>
+<td>CALL</td>
+<td>imm</td>
+<td><code>CSTACK_PUSH(pc + 4); npc = pc + b;</code></td>
+<td>Push the return address on the hardware millicode return stack. Overflow is a millicode fault.</td>
+</tr>
+<tr>
+<td><code>b.&lt;cc&gt;</code></td>
+<td>B</td>
+<td>BR cond=cc</td>
+<td>rs1, rs2, imm</td>
+<td><code>if (COND) npc = pc + IMM;</code></td>
+<td>Compare two registers and branch. Millicode control flow; never reads guest flags. cc: eq ne lt ge ltu geu.</td>
+</tr>
+<tr>
+<td><code>b.u</code></td>
+<td>B</td>
+<td>BR cond=6</td>
+<td>imm</td>
+<td><code>if (uin) npc = pc + IMM;</code></td>
+<td>Branch if the millicode predicate u is set. Encoded in the BR major with cond 6; the rs1 and rs2 fields are zero (the assembler writes zeros; the decoder ignores them). The register compare branches never read u. (reads u)</td>
+</tr>
+<tr>
+<td><code>b.nu</code></td>
+<td>B</td>
+<td>BR cond=7</td>
+<td>imm</td>
+<td><code>if (!uin) npc = pc + IMM;</code></td>
+<td>Branch if the millicode predicate u is clear (a probe failed): BR with cond 7, rs1 = rs2 = 0 as b.u. (reads u)</td>
+</tr>
+<tr>
+<td><code>bcc.&lt;cc&gt;</code></td>
+<td>C</td>
+<td>BCC cond=cc</td>
+<td>imm</td>
+<td><code>if (COND) npc = pc + b;</code></td>
+<td>Branch on a guest condition. cc: t f hi ls cc cs ne eq vc vs pl mi ge lt gt le. (reads nzvc)</td>
+</tr>
+<tr>
+<td><code>bfextu</code></td>
+<td>R</td>
+<td>BF fn=0</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = BF_EXTU(a, b);</code></td>
+<td>Extract the field described by rs2 (offset 4:0, width 9:5), zero-extended.</td>
+</tr>
+<tr>
+<td><code>bfexts</code></td>
+<td>R</td>
+<td>BF fn=1</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = BF_EXTS(a, b);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>bfffo</code></td>
+<td>R</td>
+<td>BF fn=2</td>
+<td>rd, rs1, rs2</td>
+<td><code>r = BF_FFO(a, b);</code></td>
+<td>Offset of the first 1 bit in the field, or offset+width if none (68k BFFFO).</td>
+</tr>
+<tr>
+<td><code>bfextui</code></td>
+<td>BFI</td>
+<td>BFI fn=0</td>
+<td>rd, rs1, off, wid</td>
+<td><code>r = BF_EXTU(a, b);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>bfextsi</code></td>
+<td>BFI</td>
+<td>BFI fn=1</td>
+<td>rd, rs1, off, wid</td>
+<td><code>r = BF_EXTS(a, b);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>bfinsi</code></td>
+<td>BFI</td>
+<td>BFI fn=2</td>
+<td>rd, rs1, off, wid</td>
+<td><code>r = BF_INS(OLD, a, b);</code></td>
+<td>Insert the low wid bits of rs1 into the field of rd. rd is also a source (old value), so the op reads rd and rs1.</td>
+</tr>
+<tr>
+<td><code>bx</code></td>
+<td>BFI</td>
+<td>BFI fn=3</td>
+<td>rs1, off, wid</td>
+<td><code>npc = pc + 4 + (((a &gt;&gt; BF_OFF(b)) &amp; MSK(BF_WID(b))) &lt;&lt; 2);</code></td>
+<td>Indexed branch (n-way dispatch): take the wid-bit field of rs1 starting at bit off (counted from the LSB here, 1 &lt;= wid &lt;= 15) as an index into a table of one-instruction slots that follows the bx, usually jal to each case. Predicted like an indirect jump.</td>
+</tr>
+<tr>
+<td><code>gexit</code></td>
+<td>S</td>
+<td>SYS fn=0</td>
+<td></td>
+<td></td>
+<td>End of the guest instruction: retire it, take pending interrupts/trace, resume the guest stream at gpc.</td>
+</tr>
+<tr>
+<td><code>gfault</code></td>
+<td>S</td>
+<td>SYS fn=1</td>
+<td>imm</td>
+<td></td>
+<td>Raise guest exception vector imm8. Transfers to the exception entry point.</td>
+</tr>
+<tr>
+<td><code>gfaultr</code></td>
+<td>S</td>
+<td>SYS fn=16</td>
+<td>rs1</td>
+<td></td>
+<td>Raise the guest exception whose vector is in rs1 (TRAP #n, computed vectors).</td>
+</tr>
+<tr>
+<td><code>gbcc.&lt;cc&gt;</code></td>
+<td>CG</td>
+<td>GBCC cond=cc</td>
+<td>imm</td>
+<td><code>if (COND) GNPC_SET(GPC_INSN + b);</code></td>
+<td>Guest conditional branch (Bcc, BRA via gbcc.t). cc: t f hi ls cc cs ne eq vc vs pl mi ge lt gt le. (reads nzvc)</td>
+</tr>
+<tr>
+<td><code>gbz</code></td>
+<td>BG</td>
+<td>GBZ cond=0</td>
+<td>rs1, imm</td>
+<td><code>if (a == 0) GNPC_SET(GPC_INSN + b);</code></td>
+<td>Guest branch if rs1 is zero.</td>
+</tr>
+<tr>
+<td><code>gbnz</code></td>
+<td>BG</td>
+<td>GBZ cond=1</td>
+<td>rs1, imm</td>
+<td><code>if (a != 0) GNPC_SET(GPC_INSN + b);</code></td>
+<td>Guest branch if rs1 is nonzero (DBF).</td>
+</tr>
+<tr>
+<td><code>gjr</code></td>
+<td>I</td>
+<td>GJR</td>
+<td>rs1, imm</td>
+<td><code>GNPC_SET(a + b);</code></td>
+<td>Guest jump to rs1 + imm (JMP, JSR, RTS). gjr x0, abs jumps to an absolute address.</td>
+</tr>
+<tr>
+<td><code>gpushr</code></td>
+<td>I</td>
+<td>GPUSHR</td>
+<td>rd, imm</td>
+<td><code>GSTORE(GDATA, a - 4, 4, GPC_INSN + b); r = a - 4;</code></td>
+<td>Push a return address: mem[rd - 4] = guest instruction address + imm (its length); rd = rd - 4. One register source and one result (rd is tied to rs1); the data is an immediate. A speculative store whose register result is ready at address generation.</td>
+</tr>
+<tr>
+<td><code>gpcaddi</code></td>
+<td>I</td>
+<td>GPCADDI</td>
+<td>rd, imm</td>
+<td><code>r = GPC_INSN + b;</code></td>
+<td>rd = guest instruction address + imm (return addresses, PC-relative operands).</td>
+</tr>
+<tr>
+<td><code>ret</code></td>
+<td>S</td>
+<td>SYS fn=2</td>
+<td></td>
+<td><code>npc = CSTACK_POP();</code></td>
+<td>Return through the hardware millicode return stack. Underflow is a millicode fault.</td>
+</tr>
+<tr>
+<td><code>csrr</code></td>
+<td>S</td>
+<td>SYS fn=3</td>
+<td>rd, csr</td>
+<td><code>r = CSR_READ(IMM);</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>csrw</code></td>
+<td>S</td>
+<td>SYS fn=4</td>
+<td>csr, rs1</td>
+<td><code>CSR_WRITE(IMM, a &amp; CSR_WMASK[IMM &amp; 0xff]);</code></td>
+<td>(serializes)</td>
+</tr>
+<tr>
+<td><code>csrs</code></td>
+<td>S</td>
+<td>SYS fn=5</td>
+<td>csr, rs1</td>
+<td><code>CSR_WRITE(IMM, (CSR_READ(IMM) | a) &amp; CSR_WMASK[IMM &amp; 0xff]);</code></td>
+<td>(serializes)</td>
+</tr>
+<tr>
+<td><code>csrc</code></td>
+<td>S</td>
+<td>SYS fn=6</td>
+<td>csr, rs1</td>
+<td><code>CSR_WRITE(IMM, CSR_READ(IMM) &amp; ~a &amp; CSR_WMASK[IMM &amp; 0xff]);</code></td>
+<td>(serializes)</td>
+</tr>
+<tr>
+<td><code>unlock</code></td>
+<td>S</td>
+<td>SYS fn=7</td>
+<td></td>
+<td><code>/* ends the locked sequence; no functional effect */</code></td>
+<td>End a locked sequence without a store (failed CAS compare). (serializes)</td>
+</tr>
+<tr>
+<td><code>fence</code></td>
+<td>S</td>
+<td>SYS fn=8</td>
+<td></td>
+<td></td>
+<td>Order all earlier memory accesses before all later ones. (serializes)</td>
+</tr>
+<tr>
+<td><code>tlbflush</code></td>
+<td>S</td>
+<td>SYS fn=9</td>
+<td>rs1, imm</td>
+<td><code>MMU_FLUSH(a, IMM);</code></td>
+<td>Guest TLB flush. imm bit0: page (address in rs1) vs all; bit1: non-global entries only; bit2: user-only (FC). Covers PFLUSH/PFLUSHN/PFLUSHA. (serializes)</td>
+</tr>
+<tr>
+<td><code>cpush</code></td>
+<td>S</td>
+<td>SYS fn=10</td>
+<td>rs1, imm</td>
+<td><code>CACHE_OP(a, IMM, 1);</code></td>
+<td>Write back and invalidate guest cache lines. imm bits1:0 cache (1=D, 2=I, 3=both); bits3:2 scope (0=line, 1=page, 2=all). Address in rs1. (serializes)</td>
+</tr>
+<tr>
+<td><code>cinv</code></td>
+<td>S</td>
+<td>SYS fn=11</td>
+<td>rs1, imm</td>
+<td><code>CACHE_OP(a, IMM, 0);</code></td>
+<td>Invalidate without write back. Same imm encoding as cpush. (serializes)</td>
+</tr>
+<tr>
+<td><code>irqack</code></td>
+<td>S</td>
+<td>SYS fn=12</td>
+<td>rd, rs1</td>
+<td></td>
+<td>Acknowledge the interrupt at level rs1; rd = vector (autovector if none supplied). (serializes)</td>
+</tr>
+<tr>
+<td><code>stop</code></td>
+<td>S</td>
+<td>SYS fn=13</td>
+<td></td>
+<td></td>
+<td>Wait for an interrupt (68k STOP, after millicode has loaded SR). (serializes)</td>
+</tr>
+<tr>
+<td><code>halt</code></td>
+<td>S</td>
+<td>SYS fn=14</td>
+<td>imm</td>
+<td></td>
+<td>Stop the machine (simulation / debug). imm is a status code. (serializes)</td>
+</tr>
+<tr>
+<td><code>brk</code></td>
+<td>S</td>
+<td>SYS fn=15</td>
+<td>imm</td>
+<td></td>
+<td>Debug breakpoint. (serializes)</td>
+</tr>
+<tr>
+<td><code>fadd.d</code></td>
+<td>R</td>
+<td>FP fn=0</td>
+<td>f:rd, f:rs1, f:rs2</td>
+<td></td>
+<td>fd = fs1 + fs2 (binary64).</td>
+</tr>
+<tr>
+<td><code>fsub.d</code></td>
+<td>R</td>
+<td>FP fn=1</td>
+<td>f:rd, f:rs1, f:rs2</td>
+<td></td>
+<td>fd = fs1 - fs2.</td>
+</tr>
+<tr>
+<td><code>fmul.d</code></td>
+<td>R</td>
+<td>FP fn=2</td>
+<td>f:rd, f:rs1, f:rs2</td>
+<td></td>
+<td>fd = fs1 * fs2.</td>
+</tr>
+<tr>
+<td><code>fdiv.d</code></td>
+<td>R</td>
+<td>FP fn=3</td>
+<td>f:rd, f:rs1, f:rs2</td>
+<td></td>
+<td>fd = fs1 / fs2 (the shared iterative divider).</td>
+</tr>
+<tr>
+<td><code>fsqrt.d</code></td>
+<td>R</td>
+<td>FP fn=4</td>
+<td>f:rd, f:rs1</td>
+<td></td>
+<td>fd = sqrt(fs1) (the shared iterative divider).</td>
+</tr>
+<tr>
+<td><code>fmul.s</code></td>
+<td>R</td>
+<td>FP fn=5</td>
+<td>f:rd, f:rs1, f:rs2</td>
+<td></td>
+<td>fd = fs1 * fs2 (binary32, operands and result in bits 31:0).</td>
+</tr>
+<tr>
+<td><code>fdiv.s</code></td>
+<td>R</td>
+<td>FP fn=6</td>
+<td>f:rd, f:rs1, f:rs2</td>
+<td></td>
+<td>fd = fs1 / fs2 (binary32).</td>
+</tr>
+<tr>
+<td><code>fcvt.s.d</code></td>
+<td>R</td>
+<td>FP fn=7</td>
+<td>f:rd, f:rs1</td>
+<td></td>
+<td>fd = fs1 rounded to binary32 (overflow, underflow, inexact; a NaN keeps its sign and payload top, quieted).</td>
+</tr>
+<tr>
+<td><code>fcvt.d.s</code></td>
+<td>R</td>
+<td>FP fn=8</td>
+<td>f:rd, f:rs1</td>
+<td></td>
+<td>fd = the binary32 in fs1 widened to binary64 (exact; a signaling NaN is quieted and raises invalid).</td>
+</tr>
+<tr>
+<td><code>fmov.d</code></td>
+<td>R</td>
+<td>FP fn=9</td>
+<td>f:rd, f:rs1</td>
+<td></td>
+<td>fd = fs1, all 64 bits. No exceptions.</td>
+</tr>
+<tr>
+<td><code>fneg.d</code></td>
+<td>R</td>
+<td>FP fn=10</td>
+<td>f:rd, f:rs1</td>
+<td></td>
+<td>fd = fs1 with bit 63 inverted (NaNs too). No exceptions.</td>
+</tr>
+<tr>
+<td><code>fabs.d</code></td>
+<td>R</td>
+<td>FP fn=11</td>
+<td>f:rd, f:rs1</td>
+<td></td>
+<td>fd = fs1 with bit 63 cleared (NaNs too). No exceptions.</td>
+</tr>
+<tr>
+<td><code>fsethi</code></td>
+<td>R</td>
+<td>FP fn=16</td>
+<td>f:rd, rs1</td>
+<td></td>
+<td>fd[63:32] = rs1; fd[31:0] keeps its value (fd is a source). An integer-to-FP move.</td>
+</tr>
+<tr>
+<td><code>fsetlo</code></td>
+<td>R</td>
+<td>FP fn=17</td>
+<td>f:rd, rs1</td>
+<td></td>
+<td>fd[31:0] = rs1; fd[63:32] keeps its value (fd is a source).</td>
+</tr>
+<tr>
+<td><code>fgethi</code></td>
+<td>R</td>
+<td>FP fn=18</td>
+<td>rd, f:rs1</td>
+<td></td>
+<td>rd = fs1[63:32]. An FP-to-integer move.</td>
+</tr>
+<tr>
+<td><code>fgetlo</code></td>
+<td>R</td>
+<td>FP fn=19</td>
+<td>rd, f:rs1</td>
+<td></td>
+<td>rd = fs1[31:0].</td>
+</tr>
+</tbody>
+</table>
+<h2 id="guest-semantic-operations">Guest-semantic operations<a class="headerlink" href="#guest-semantic-operations" title="Permanent link">&para;</a></h2>
+<p>Each family expands into sized forms (see <em>Sized operations</em> above). <code>&lt;f&gt;.8</code>/<code>&lt;f&gt;.16</code> merge into rd and are two-address (rs1 = rd); <code>&lt;f&gt;.32</code> is three-address; <code>&lt;f&gt;.8z</code>/<code>&lt;f&gt;.16z</code> zero-fill and do not read the old rd. Families marked <em>imm</em> also have <code>&lt;f&gt;i.&lt;sz&gt;[z]</code> forms with a 6-bit unsigned immediate. Every form has a <code>.nf</code> variant that writes no flags.</p>
+<table>
+<thead>
+<tr>
+<th>Family</th>
+<th>fn</th>
+<th>Kind</th>
+<th>Sizes</th>
+<th>imm</th>
+<th>Reads</th>
+<th>Writes</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>add</code></td>
+<td>0</td>
+<td>binary</td>
+<td>8,16,32</td>
+<td>yes</td>
+<td>-</td>
+<td>N Z V C X</td>
+<td></td>
+</tr>
+<tr>
+<td><code>addx</code></td>
+<td>1</td>
+<td>binary</td>
+<td>8,16,32</td>
+<td></td>
+<td>X Z</td>
+<td>N Z V C X</td>
+<td>Z is sticky: cleared if the result is nonzero, otherwise unchanged.</td>
+</tr>
+<tr>
+<td><code>sub</code></td>
+<td>2</td>
+<td>binary</td>
+<td>8,16,32</td>
+<td>yes</td>
+<td>-</td>
+<td>N Z V C X</td>
+<td></td>
+</tr>
+<tr>
+<td><code>subx</code></td>
+<td>3</td>
+<td>binary</td>
+<td>8,16,32</td>
+<td></td>
+<td>X Z</td>
+<td>N Z V C X</td>
+<td></td>
+</tr>
+<tr>
+<td><code>neg</code></td>
+<td>4</td>
+<td>unary</td>
+<td>8,16,32</td>
+<td></td>
+<td>-</td>
+<td>N Z V C X</td>
+<td></td>
+</tr>
+<tr>
+<td><code>negx</code></td>
+<td>5</td>
+<td>unary</td>
+<td>8,16,32</td>
+<td></td>
+<td>X Z</td>
+<td>N Z V C X</td>
+<td></td>
+</tr>
+<tr>
+<td><code>cmp</code></td>
+<td>6</td>
+<td>compare</td>
+<td>8,16,32</td>
+<td>yes</td>
+<td>-</td>
+<td>N Z V C</td>
+<td>Flags of rs1 - rs2. X unaffected.</td>
+</tr>
+<tr>
+<td><code>and</code></td>
+<td>7</td>
+<td>binary</td>
+<td>8,16,32</td>
+<td>yes</td>
+<td>-</td>
+<td>N Z V C</td>
+<td></td>
+</tr>
+<tr>
+<td><code>or</code></td>
+<td>8</td>
+<td>binary</td>
+<td>8,16,32</td>
+<td>yes</td>
+<td>-</td>
+<td>N Z V C</td>
+<td></td>
+</tr>
+<tr>
+<td><code>eor</code></td>
+<td>9</td>
+<td>binary</td>
+<td>8,16,32</td>
+<td>yes</td>
+<td>-</td>
+<td>N Z V C</td>
+<td></td>
+</tr>
+<tr>
+<td><code>not</code></td>
+<td>10</td>
+<td>unary</td>
+<td>8,16,32</td>
+<td></td>
+<td>-</td>
+<td>N Z V C</td>
+<td></td>
+</tr>
+<tr>
+<td><code>mov</code></td>
+<td>11</td>
+<td>unary</td>
+<td>8,16,32</td>
+<td>yes</td>
+<td>-</td>
+<td>N Z V C</td>
+<td>MOVE / TST. mov.8z x0, rs gives TST.B.</td>
+</tr>
+<tr>
+<td><code>lsl</code></td>
+<td>12</td>
+<td>binary</td>
+<td>8,16,32</td>
+<td>yes</td>
+<td>X</td>
+<td>N Z V C X</td>
+<td>Count is rs2 mod 64. A zero count clears C and leaves X; X is therefore always read.</td>
+</tr>
+<tr>
+<td><code>lsr</code></td>
+<td>13</td>
+<td>binary</td>
+<td>8,16,32</td>
+<td>yes</td>
+<td>X</td>
+<td>N Z V C X</td>
+<td></td>
+</tr>
+<tr>
+<td><code>asl</code></td>
+<td>14</td>
+<td>binary</td>
+<td>8,16,32</td>
+<td>yes</td>
+<td>X</td>
+<td>N Z V C X</td>
+<td>V is set if the most significant bit changes at any time during the shift.</td>
+</tr>
+<tr>
+<td><code>asr</code></td>
+<td>15</td>
+<td>binary</td>
+<td>8,16,32</td>
+<td>yes</td>
+<td>X</td>
+<td>N Z V C X</td>
+<td></td>
+</tr>
+<tr>
+<td><code>rol</code></td>
+<td>16</td>
+<td>binary</td>
+<td>8,16,32</td>
+<td>yes</td>
+<td>-</td>
+<td>N Z V C</td>
+<td>X unaffected.</td>
+</tr>
+<tr>
+<td><code>ror</code></td>
+<td>17</td>
+<td>binary</td>
+<td>8,16,32</td>
+<td>yes</td>
+<td>-</td>
+<td>N Z V C</td>
+<td></td>
+</tr>
+<tr>
+<td><code>roxl</code></td>
+<td>18</td>
+<td>binary</td>
+<td>8,16,32</td>
+<td>yes</td>
+<td>X</td>
+<td>N Z V C X</td>
+<td>Rotate through X (n+1 bits). A zero count sets C to X.</td>
+</tr>
+<tr>
+<td><code>roxr</code></td>
+<td>19</td>
+<td>binary</td>
+<td>8,16,32</td>
+<td>yes</td>
+<td>X</td>
+<td>N Z V C X</td>
+<td></td>
+</tr>
+<tr>
+<td><code>abcd</code></td>
+<td>20</td>
+<td>binary</td>
+<td>8</td>
+<td></td>
+<td>X Z</td>
+<td>N Z V C X</td>
+<td>Packed BCD add with X. N and V are undefined on the 68040; the values here are placeholders to be matched to the reference model.</td>
+</tr>
+<tr>
+<td><code>sbcd</code></td>
+<td>21</td>
+<td>binary</td>
+<td>8</td>
+<td></td>
+<td>X Z</td>
+<td>N Z V C X</td>
+<td>Packed BCD rs1 - rs2 - X. N and V undefined (placeholders).</td>
+</tr>
+<tr>
+<td><code>nbcd</code></td>
+<td>22</td>
+<td>unary</td>
+<td>8</td>
+<td></td>
+<td>X Z</td>
+<td>N Z V C X</td>
+<td></td>
+</tr>
+<tr>
+<td><code>mulu</code></td>
+<td>23</td>
+<td>full</td>
+<td>16,32</td>
+<td></td>
+<td>-</td>
+<td>N Z V C</td>
+<td>.16: 16x16-&gt;32 (MULU.W). .32: low 32 bits, V on overflow (MULU.L 32-bit result). High half: base mulhu.</td>
+</tr>
+<tr>
+<td><code>muls</code></td>
+<td>24</td>
+<td>full</td>
+<td>16,32</td>
+<td></td>
+<td>-</td>
+<td>N Z V C</td>
+<td></td>
+</tr>
+<tr>
+<td><code>divu</code></td>
+<td>25</td>
+<td>tiedfull</td>
+<td>16,32</td>
+<td></td>
+<td>N Z V</td>
+<td>N Z V C</td>
+<td>.16: 32/16 -&gt; remainder:quotient (DIVU.W); on overflow rd, N and Z are unchanged, V is set and C cleared (as the 68040 does). .32: quotient only; remainder via base remu. Trap: zero divisor: rd, N, Z and V unchanged, C cleared, and the zero-divide trap (vector 5) taken once the instruction retires</td>
+</tr>
+<tr>
+<td><code>divs</code></td>
+<td>26</td>
+<td>tiedfull</td>
+<td>16,32</td>
+<td></td>
+<td>N Z V</td>
+<td>N Z V C</td>
+<td>Trap: zero divisor: as divu</td>
+</tr>
+<tr>
+<td><code>ext</code></td>
+<td>27</td>
+<td>unary</td>
+<td>16,32</td>
+<td></td>
+<td>-</td>
+<td>N Z V C</td>
+<td>.16: EXT.W (byte to word, merged). .32: EXT.L (word to long).</td>
+</tr>
+<tr>
+<td><code>extb</code></td>
+<td>28</td>
+<td>unary</td>
+<td>32</td>
+<td></td>
+<td>-</td>
+<td>N Z V C</td>
+<td>EXTB.L (byte to long).</td>
+</tr>
+<tr>
+<td><code>btst</code></td>
+<td>29</td>
+<td>compare</td>
+<td>8,32</td>
+<td>yes</td>
+<td>N V C</td>
+<td>N Z V C</td>
+<td>Bit test: only Z changes, so NZVC is read and merged. .8 for memory operands (bit mod 8), .32 for Dn (bit mod 32).</td>
+</tr>
+<tr>
+<td><code>bchg</code></td>
+<td>30</td>
+<td>binary</td>
+<td>8,32</td>
+<td>yes</td>
+<td>N V C</td>
+<td>N Z V C</td>
+<td></td>
+</tr>
+<tr>
+<td><code>bclr</code></td>
+<td>31</td>
+<td>binary</td>
+<td>8,32</td>
+<td>yes</td>
+<td>N V C</td>
+<td>N Z V C</td>
+<td></td>
+</tr>
+<tr>
+<td><code>bset</code></td>
+<td>32</td>
+<td>binary</td>
+<td>8,32</td>
+<td>yes</td>
+<td>N V C</td>
+<td>N Z V C</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="guest-op-semantics">Guest-op semantics<a class="headerlink" href="#guest-op-semantics" title="Permanent link">&para;</a></h3>
+<p>C reference semantics, exactly as compiled into the generated ISS header. <code>n</code> = operand width, <code>m</code> = MSK(n), <code>xin</code>..<code>cin</code> = incoming flags. Setting <code>T</code> to a vector flags a trap: the uop's instruction retires (its other results, such as an address-register update, stand) and the exception is then taken with the next PC stacked, as the 68k does for a zero divide.</p>
+<p><strong><code>add</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kt">uint64_t</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint64_t</span><span class="p">)(</span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">);</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">s</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">C</span><span class="p">;</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">((</span><span class="n">a</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">r</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">r</span><span class="p">),</span><span class="w"> </span><span class="n">n</span><span class="p">);</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p><strong><code>addx</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">uint64_t</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint64_t</span><span class="p">)(</span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">xin</span><span class="p">;</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">s</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">C</span><span class="p">;</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">((</span><span class="n">a</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">r</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">r</span><span class="p">),</span><span class="w"> </span><span class="n">n</span><span class="p">);</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zin</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p><strong><code>sub</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">);</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">C</span><span class="p">;</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">((</span><span class="n">a</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">r</span><span class="p">),</span><span class="w"> </span><span class="n">n</span><span class="p">);</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p><strong><code>subx</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">xin</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint64_t</span><span class="p">)(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">xin</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">);</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">C</span><span class="p">;</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">((</span><span class="n">a</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">r</span><span class="p">),</span><span class="w"> </span><span class="n">n</span><span class="p">);</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zin</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p><strong><code>neg</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">0u</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">C</span><span class="p">;</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p><strong><code>negx</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">0u</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">xin</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="kt">uint64_t</span><span class="p">)(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">xin</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">C</span><span class="p">;</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zin</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p><strong><code>cmp</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">);</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">((</span><span class="n">a</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">r</span><span class="p">),</span><span class="w"> </span><span class="n">n</span><span class="p">);</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p><strong><code>and</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>or</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>eor</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>not</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">~</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>mov</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>lsl</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kt">unsigned</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">63</span><span class="p">;</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">v</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xin</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">((</span><span class="n">v</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">k</span><span class="p">))</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">C</span><span class="p">;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)((</span><span class="n">v</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p><strong><code>lsr</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kt">unsigned</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">63</span><span class="p">;</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">v</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xin</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">((</span><span class="n">v</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">C</span><span class="p">;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)(</span><span class="n">v</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p><strong><code>asl</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kt">unsigned</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">63</span><span class="p">;</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">v</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xin</span><span class="p">;</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">((</span><span class="n">v</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">k</span><span class="p">))</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">C</span><span class="p">;</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">  </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)((</span><span class="n">v</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">  </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">hm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSK</span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">k</span><span class="p">);</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">hm</span><span class="p">;</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">t</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">hm</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="p">}</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p><strong><code>asr</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kt">unsigned</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">63</span><span class="p">;</span><span class="w"> </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">sv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SX</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xin</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">((</span><span class="n">sv</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">C</span><span class="p">;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)(</span><span class="n">sv</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">63</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">63</span><span class="p">))</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p><strong><code>rol</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kt">unsigned</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">63</span><span class="p">;</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">v</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)(</span><span class="n">s</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(((</span><span class="n">v</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">s</span><span class="p">)))</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">v</span><span class="p">);</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p><strong><code>ror</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kt">unsigned</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">63</span><span class="p">;</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">v</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)(</span><span class="n">s</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(((</span><span class="n">v</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">s</span><span class="p">)))</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">v</span><span class="p">);</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p><strong><code>roxl</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kt">unsigned</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">63</span><span class="p">)</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">xin</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">);</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">wm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">1ull</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">   </span><span class="cm">/* n + 1 bits: MSK() saturates at 32 */</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="n">w</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">w</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">k</span><span class="p">)))</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">wm</span><span class="p">;</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)(</span><span class="n">w</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">);</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">w</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">X</span><span class="p">;</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p><strong><code>roxr</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kt">unsigned</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">63</span><span class="p">)</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">xin</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">);</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">wm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">1ull</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">   </span><span class="cm">/* n + 1 bits: MSK() saturates at 32 */</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="n">w</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">w</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">k</span><span class="p">)))</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">wm</span><span class="p">;</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)(</span><span class="n">w</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">);</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">w</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">X</span><span class="p">;</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p><strong><code>abcd</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">lo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">15</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">15</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">xin</span><span class="p">;</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">lo</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">9</span><span class="p">)</span><span class="w"> </span><span class="n">lo</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">6</span><span class="p">;</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="kt">int</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lo</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xf0</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xf0</span><span class="p">);</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mh">0x99</span><span class="p">;</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">C</span><span class="p">;</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">C</span><span class="p">)</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mh">0xa0</span><span class="p">;</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">s</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xff</span><span class="p">;</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zin</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">);</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>sbcd</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">lo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">15</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">15</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">xin</span><span class="p">;</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="kt">int</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xf0</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xf0</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">lo</span><span class="p">;</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">lo</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mi">6</span><span class="p">;</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">C</span><span class="p">;</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">C</span><span class="p">)</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mh">0xa0</span><span class="p">;</span>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">s</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xff</span><span class="p">;</span>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zin</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">);</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>nbcd</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">lo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">15</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">xin</span><span class="p">;</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="kt">int</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xf0</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">lo</span><span class="p">;</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">lo</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mi">6</span><span class="p">;</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">C</span><span class="p">;</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">C</span><span class="p">)</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mh">0xa0</span><span class="p">;</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">s</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xff</span><span class="p">;</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zin</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">);</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>mulu</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xffff</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xffff</span><span class="p">);</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">a</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">p</span><span class="p">;</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="mi">32</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>muls</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)(</span><span class="n">SX</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">SX</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="mi">16</span><span class="p">));</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int64_t</span><span class="p">)(</span><span class="kt">int32_t</span><span class="p">)</span><span class="n">a</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="kt">int32_t</span><span class="p">)</span><span class="n">b</span><span class="p">;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">p</span><span class="p">;</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="p">(</span><span class="kt">int64_t</span><span class="p">)(</span><span class="kt">int32_t</span><span class="p">)</span><span class="n">r</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>divu</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">n</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">16</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xffff</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span><span class="w"> </span><span class="n">T</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">  </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xffff</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="n">rm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">d</span><span class="p">;</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">q</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mh">0xffff</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="w">  </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">rm</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">q</span><span class="p">;</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="mi">16</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">q</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">b</span><span class="p">;</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>divs</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">n</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">16</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xffff</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span><span class="w"> </span><span class="n">T</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">  </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SX</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="mi">16</span><span class="p">),</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int64_t</span><span class="p">)(</span><span class="kt">int32_t</span><span class="p">)</span><span class="n">a</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="n">rm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int64_t</span><span class="p">)(</span><span class="kt">int32_t</span><span class="p">)</span><span class="n">a</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">d</span><span class="p">;</span>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">q</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">32767</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">-32768</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="w">  </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(((</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">rm</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xffff</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">((</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">q</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xffff</span><span class="p">);</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">((</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="mi">16</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">q</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mh">0x80000000u</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mh">0xffffffffu</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)((</span><span class="kt">int32_t</span><span class="p">)</span><span class="n">a</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">int32_t</span><span class="p">)</span><span class="n">b</span><span class="p">);</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>ext</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">SX</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>extb</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">SX</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">);</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MSB</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>btst</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="p">((</span><span class="n">a</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)))</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nin</span><span class="p">;</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vin</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cin</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>bchg</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="kt">unsigned</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="p">((</span><span class="n">a</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="p">(</span><span class="mi">1u</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">k</span><span class="p">))</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nin</span><span class="p">;</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vin</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cin</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>bclr</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="kt">unsigned</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="p">((</span><span class="n">a</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="o">~</span><span class="p">(</span><span class="mi">1u</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">k</span><span class="p">))</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nin</span><span class="p">;</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vin</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cin</span><span class="p">;</span>
+</code></pre></div>
+<p><strong><code>bset</code></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="kt">unsigned</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="p">((</span><span class="n">a</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="mi">1u</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">k</span><span class="p">))</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">m</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nin</span><span class="p">;</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vin</span><span class="p">;</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cin</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="conditions">Conditions<a class="headerlink" href="#conditions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Guest (<code>bcc</code>, <code>sel</code>, <code>s</code>)</th>
+<th>Expression</th>
+<th>Base (<code>b</code>)</th>
+<th>Expression</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>t</code></td>
+<td><code>1</code></td>
+<td><code>eq</code></td>
+<td><code>a == b</code></td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>f</code></td>
+<td><code>0</code></td>
+<td><code>ne</code></td>
+<td><code>a != b</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>hi</code></td>
+<td><code>!C &amp;&amp; !Z</code></td>
+<td><code>lt</code></td>
+<td><code>(int32_t)a &lt; (int32_t)b</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>ls</code></td>
+<td><code>C || Z</code></td>
+<td><code>ge</code></td>
+<td><code>(int32_t)a &gt;= (int32_t)b</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>cc</code></td>
+<td><code>!C</code></td>
+<td><code>ltu</code></td>
+<td><code>a &lt; b</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>cs</code></td>
+<td><code>C</code></td>
+<td><code>geu</code></td>
+<td><code>a &gt;= b</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>ne</code></td>
+<td><code>!Z</code></td>
+<td><code>u</code></td>
+<td><code>if (uin) npc = pc + IMM;</code> (the <code>b.u</code> op)</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>eq</code></td>
+<td><code>Z</code></td>
+<td><code>nu</code></td>
+<td><code>if (!uin) npc = pc + IMM;</code> (the <code>b.nu</code> op)</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>vc</code></td>
+<td><code>!V</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>vs</code></td>
+<td><code>V</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>pl</code></td>
+<td><code>!N</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>11</td>
+<td><code>mi</code></td>
+<td><code>N</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>12</td>
+<td><code>ge</code></td>
+<td><code>N == V</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>13</td>
+<td><code>lt</code></td>
+<td><code>N != V</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>14</td>
+<td><code>gt</code></td>
+<td><code>!Z &amp;&amp; (N == V)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>15</td>
+<td><code>le</code></td>
+<td><code>Z || (N != V)</code></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="memory-operations">Memory operations<a class="headerlink" href="#memory-operations" title="Permanent link">&para;</a></h2>
+<p>Mnemonic suffix selects the address space: <code>.h</code> hidden, <code>.gd</code> gdata, <code>.gp</code> gprog, <code>.ga</code> galt.
+Syntax: <code>ld.32.gd rd, disp(rs1)</code>; stores take the data register in the rd position.</p>
+<table>
+<thead>
+<tr>
+<th>Space</th>
+<th>Code</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.h</code></td>
+<td>0</td>
+<td>Physical, untranslated. Hidden memory and devices. The guest MMU can never produce these addresses.</td>
+</tr>
+<tr>
+<td><code>.gd</code></td>
+<td>1</td>
+<td>Guest data space: translated with the guest's current privilege (S bit); data function code.</td>
+</tr>
+<tr>
+<td><code>.gp</code></td>
+<td>2</td>
+<td>Guest program space: as gdata with the program function code (PC-relative operands, extension words).</td>
+</tr>
+<tr>
+<td><code>.ga</code></td>
+<td>3</td>
+<td>Guest alternate space: function code from SFC (loads) or DFC (stores and probes), for MOVES and PTEST.</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Op</th>
+<th>Major</th>
+<th>Kind</th>
+<th>Bytes</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ld.8u</code></td>
+<td>LD8U</td>
+<td>load</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ld.8s</code></td>
+<td>LD8S</td>
+<td>load (signed)</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ld.16u</code></td>
+<td>LD16U</td>
+<td>load</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ld.16s</code></td>
+<td>LD16S</td>
+<td>load (signed)</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ld.32</code></td>
+<td>LD32</td>
+<td>load</td>
+<td>4</td>
+<td></td>
+</tr>
+<tr>
+<td><code>st.8</code></td>
+<td>ST8</td>
+<td>store</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td><code>st.16</code></td>
+<td>ST16</td>
+<td>store</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td><code>st.32</code></td>
+<td>ST32</td>
+<td>store</td>
+<td>4</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ldl.8</code></td>
+<td>LDL8</td>
+<td>load lock-begin</td>
+<td>1</td>
+<td>Locked load: begins an atomic sequence (TAS, CAS, CAS2). Executes non-speculatively.</td>
+</tr>
+<tr>
+<td><code>ldl.16</code></td>
+<td>LDL16</td>
+<td>load lock-begin</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ldl.32</code></td>
+<td>LDL32</td>
+<td>load lock-begin</td>
+<td>4</td>
+<td></td>
+</tr>
+<tr>
+<td><code>stu.8</code></td>
+<td>STU8</td>
+<td>store lock-end</td>
+<td>1</td>
+<td>Unlocking store: ends the atomic sequence.</td>
+</tr>
+<tr>
+<td><code>stu.16</code></td>
+<td>STU16</td>
+<td>store lock-end</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td><code>stu.32</code></td>
+<td>STU32</td>
+<td>store lock-end</td>
+<td>4</td>
+<td></td>
+</tr>
+<tr>
+<td><code>cas.8</code></td>
+<td>CAS</td>
+<td>cas</td>
+<td>1</td>
+<td>Compare-and-swap byte: if [rs1 + imm] == rs2[7:0], store rd[7:0]; rd = the old byte. Atomic (as SPARC CASA); 68k CAS on the PLA path.</td>
+</tr>
+<tr>
+<td><code>cas.16</code></td>
+<td>CAS</td>
+<td>cas</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td><code>cas.32</code></td>
+<td>CAS</td>
+<td>cas</td>
+<td>4</td>
+<td></td>
+</tr>
+<tr>
+<td><code>probe.r</code></td>
+<td>PROBER</td>
+<td>probe, forms .us/.ua write u</td>
+<td>0</td>
+<td>Translate rs1 + imm for a read without accessing memory, using the hardware table walker (transparent translation registers, then the tables; loads the ATC). rd = the 68040 MMUSR value for the translation: physical page in 31:12, then B(11) G(10) U1 U0 S(7) CM(6:5) M(4) W(2) T(1) R(0). With translation disabled (TC.E = 0) and no TTR matching, rd = 0 (the access is untranslated). The access would succeed (ok, spec probe_ok) if translation is disabled and no TTR matched (rd = 0), or if T or R is set and B is clear (and, for probe.w, W is clear; for a user-mode access, S is clear). Never faults. PTESTR/PTESTW are probe.r.ga/probe.w.ga. probe.r.us also sets the millicode predicate u to that success (ok); probe.r.ua sets u = u &amp;&amp; ok, so a chain of probes leaves u set only if every probed access would succeed.</td>
+</tr>
+<tr>
+<td><code>probe.w</code></td>
+<td>PROBEW</td>
+<td>probe, forms .us/.ua write u</td>
+<td>0</td>
+<td>As probe.r, translating for a write (ok also needs W clear); probe.w.us / probe.w.ua write u as probe.r.us / probe.r.ua.</td>
+</tr>
+<tr>
+<td><code>ld.c.8u</code></td>
+<td>LDC</td>
+<td>load, reads u</td>
+<td>1</td>
+<td>Conditional load: if u is set, exactly ld.8u; if u is clear, rd = 0 and no access is made (no translation, no fault).</td>
+</tr>
+<tr>
+<td><code>ld.c.8s</code></td>
+<td>LDC</td>
+<td>load (signed), reads u</td>
+<td>1</td>
+<td>Conditional load: if u is set, exactly ld.8s; if u is clear, rd = 0 and no access is made.</td>
+</tr>
+<tr>
+<td><code>ld.c.16u</code></td>
+<td>LDC</td>
+<td>load, reads u</td>
+<td>2</td>
+<td>Conditional load: if u is set, exactly ld.16u; if u is clear, rd = 0 and no access is made.</td>
+</tr>
+<tr>
+<td><code>ld.c.16s</code></td>
+<td>LDC</td>
+<td>load (signed), reads u</td>
+<td>2</td>
+<td>Conditional load: if u is set, exactly ld.16s; if u is clear, rd = 0 and no access is made.</td>
+</tr>
+<tr>
+<td><code>ld.c.32</code></td>
+<td>LDC</td>
+<td>load, reads u</td>
+<td>4</td>
+<td>Conditional load: if u is set, exactly ld.32; if u is clear, rd = 0 and no access is made.</td>
+</tr>
+<tr>
+<td><code>st.c.8</code></td>
+<td>STC</td>
+<td>store, reads u</td>
+<td>1</td>
+<td>Conditional store: if u is set, exactly st.8 (the data is in rd); if u is clear, nothing is stored and no access is made. Only a store that happens is a guest-visible write.</td>
+</tr>
+<tr>
+<td><code>st.c.16</code></td>
+<td>STC</td>
+<td>store, reads u</td>
+<td>2</td>
+<td>Conditional store: if u is set, exactly st.16; if u is clear, nothing is stored.</td>
+</tr>
+<tr>
+<td><code>st.c.32</code></td>
+<td>STC</td>
+<td>store, reads u</td>
+<td>4</td>
+<td>Conditional store: if u is set, exactly st.32; if u is clear, nothing is stored.</td>
+</tr>
+<tr>
+<td><code>stu.c.8</code></td>
+<td>STC</td>
+<td>store lock-end, reads u</td>
+<td>1</td>
+<td>Conditional unlocking store: if u is set, exactly stu.8; if u is clear, nothing is stored. It releases the lock (ends the locked sequence) either way.</td>
+</tr>
+<tr>
+<td><code>stu.c.16</code></td>
+<td>STC</td>
+<td>store lock-end, reads u</td>
+<td>2</td>
+<td>Conditional unlocking store: if u is set, exactly stu.16; if u is clear, nothing is stored. It releases the lock either way.</td>
+</tr>
+<tr>
+<td><code>stu.c.32</code></td>
+<td>STC</td>
+<td>store lock-end, reads u</td>
+<td>4</td>
+<td>Conditional unlocking store: if u is set, exactly stu.32; if u is clear, nothing is stored. It releases the lock either way.</td>
+</tr>
+<tr>
+<td><code>st.8.pre</code></td>
+<td>STPRE8</td>
+<td>store</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td><code>st.16.pre</code></td>
+<td>STPRE16</td>
+<td>store</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td><code>st.32.pre</code></td>
+<td>STPRE32</td>
+<td>store</td>
+<td>4</td>
+<td></td>
+</tr>
+<tr>
+<td><code>st.8.post</code></td>
+<td>STPOST8</td>
+<td>store</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td><code>st.16.post</code></td>
+<td>STPOST16</td>
+<td>store</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td><code>st.32.post</code></td>
+<td>STPOST32</td>
+<td>store</td>
+<td>4</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="control-and-status-registers">Control and status registers<a class="headerlink" href="#control-and-status-registers" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Number</th>
+<th>Name</th>
+<th>Implemented bits</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x00</td>
+<td><code>vbr</code></td>
+<td>all</td>
+<td>68k vector base register.</td>
+</tr>
+<tr>
+<td>0x01</td>
+<td><code>sfc</code></td>
+<td><code>0x00000007</code></td>
+<td>Source function code (galt loads).</td>
+</tr>
+<tr>
+<td>0x02</td>
+<td><code>dfc</code></td>
+<td><code>0x00000007</code></td>
+<td>Destination function code (galt stores and probes).</td>
+</tr>
+<tr>
+<td>0x03</td>
+<td><code>cacr</code></td>
+<td><code>0x80008000</code></td>
+<td>68040 cache control.</td>
+</tr>
+<tr>
+<td>0x04</td>
+<td><code>tc</code></td>
+<td><code>0x0000c000</code></td>
+<td>68040 MMU translation control.</td>
+</tr>
+<tr>
+<td>0x05</td>
+<td><code>itt0</code></td>
+<td><code>0xffffe364</code></td>
+<td>Instruction transparent translation 0.</td>
+</tr>
+<tr>
+<td>0x06</td>
+<td><code>itt1</code></td>
+<td><code>0xffffe364</code></td>
+<td>Instruction transparent translation 1.</td>
+</tr>
+<tr>
+<td>0x07</td>
+<td><code>dtt0</code></td>
+<td><code>0xffffe364</code></td>
+<td>Data transparent translation 0.</td>
+</tr>
+<tr>
+<td>0x08</td>
+<td><code>dtt1</code></td>
+<td><code>0xffffe364</code></td>
+<td>Data transparent translation 1.</td>
+</tr>
+<tr>
+<td>0x09</td>
+<td><code>mmusr</code></td>
+<td>all</td>
+<td>MMU status (PTEST result, from probe).</td>
+</tr>
+<tr>
+<td>0x0a</td>
+<td><code>urp</code></td>
+<td><code>0xfffffe00</code></td>
+<td>User root pointer.</td>
+</tr>
+<tr>
+<td>0x0b</td>
+<td><code>srp</code></td>
+<td><code>0xfffffe00</code></td>
+<td>Supervisor root pointer.</td>
+</tr>
+<tr>
+<td>0x0c</td>
+<td><code>usp</code></td>
+<td>all</td>
+<td>Inactive user stack pointer.</td>
+</tr>
+<tr>
+<td>0x0d</td>
+<td><code>isp</code></td>
+<td>all</td>
+<td>Inactive interrupt stack pointer.</td>
+</tr>
+<tr>
+<td>0x0e</td>
+<td><code>msp</code></td>
+<td>all</td>
+<td>Inactive master stack pointer.</td>
+</tr>
+<tr>
+<td>0x20</td>
+<td><code>fpcr</code></td>
+<td>all</td>
+<td>68881 FPCR: exception enables 15:8, rounding precision 7:6, rounding mode 5:4 (the FP ops' dynamic rounding mode). All 32 bits are kept (millicode masks what a 68k FMOVE writes).</td>
+</tr>
+<tr>
+<td>0x21</td>
+<td><code>fpsr</code></td>
+<td><code>0x0ffffff8</code></td>
+<td>68881 FPSR: condition codes 27:24, quotient 23:16, exception status 15:8, accrued exceptions 7:3.</td>
+</tr>
+<tr>
+<td>0x22</td>
+<td><code>fpiar</code></td>
+<td>all</td>
+<td>68881 FPIAR: the address of the last FP instruction that set it.</td>
+</tr>
+<tr>
+<td>0x23</td>
+<td><code>fflags</code></td>
+<td><code>0x0000001f</code></td>
+<td>IEEE exceptions accrued by the FP ops: NV 4, DZ 3, OF 2, UF 1, NX 0. Every FP arithmetic or conversion op ORs in what it raises; a read sees every older FP op's flags (an implementation orders it after them).</td>
+</tr>
+<tr>
+<td>0x24</td>
+<td><code>fpused</code></td>
+<td><code>0x00000001</code></td>
+<td>Bit 0: the FPU has been used since its last reset (68040 FSAVE: an idle frame; clear: a null frame). Not 68k-visible.</td>
+</tr>
+<tr>
+<td>0x40</td>
+<td><code>mstatus</code></td>
+<td>all</td>
+<td>Micro-engine status: pending interrupt level, trace pending, locked-sequence active.</td>
+</tr>
+<tr>
+<td>0x41</td>
+<td><code>fault_addr</code></td>
+<td>all</td>
+<td>Guest access fault: faulting address (68040 frame FA and WB3A).</td>
+</tr>
+<tr>
+<td>0x42</td>
+<td><code>fault_status</code></td>
+<td>all</td>
+<td>Guest access fault: 68040 special status word (SSW): read/write, size, transfer type and modifier, continuation bits.</td>
+</tr>
+<tr>
+<td>0x43</td>
+<td><code>fault_pc</code></td>
+<td>all</td>
+<td>Guest PC of the instruction that faulted.</td>
+</tr>
+<tr>
+<td>0x44</td>
+<td><code>mcycle</code></td>
+<td>all</td>
+<td>Cycle counter.</td>
+</tr>
+<tr>
+<td>0x45</td>
+<td><code>ginstret</code></td>
+<td>all</td>
+<td>Guest instructions retired.</td>
+</tr>
+<tr>
+<td>0x46</td>
+<td><code>dispatch_base</code></td>
+<td>all</td>
+<td>Hidden-memory base of the opword dispatch table.</td>
+</tr>
+<tr>
+<td>0x47</td>
+<td><code>scratch_base</code></td>
+<td>all</td>
+<td>Hidden-memory base of millicode scratch storage.</td>
+</tr>
+<tr>
+<td>0x48</td>
+<td><code>fault_ea</code></td>
+<td>all</td>
+<td>Guest access fault: effective address of the faulting instruction (68040 frame EA).</td>
+</tr>
+<tr>
+<td>0x49</td>
+<td><code>wb2_status</code></td>
+<td>all</td>
+<td>Guest access fault: pending writeback 2 status (68040 frame WB2S).</td>
+</tr>
+<tr>
+<td>0x4a</td>
+<td><code>wb2_addr</code></td>
+<td>all</td>
+<td>Guest access fault: pending writeback 2 address (WB2A).</td>
+</tr>
+<tr>
+<td>0x4b</td>
+<td><code>wb3_status</code></td>
+<td>all</td>
+<td>Guest access fault: pending writeback 3 status (WB3S); WB3 is the faulting store.</td>
+</tr>
+<tr>
+<td>0x4c</td>
+<td><code>wb3_data</code></td>
+<td>all</td>
+<td>Guest access fault: pending writeback 3 data (WB3D).</td>
+</tr>
+<tr>
+<td>0x4d</td>
+<td><code>fault_pd0</code></td>
+<td>all</td>
+<td>Guest access fault: MOVE16 line data 0 / writeback 1 data (PD0, WB1D).</td>
+</tr>
+<tr>
+<td>0x4e</td>
+<td><code>fault_pd1</code></td>
+<td>all</td>
+<td>Guest access fault: MOVE16 line data 1 (PD1).</td>
+</tr>
+<tr>
+<td>0x4f</td>
+<td><code>fault_pd2</code></td>
+<td>all</td>
+<td>Guest access fault: MOVE16 line data 2 (PD2).</td>
+</tr>
+<tr>
+<td>0x50</td>
+<td><code>fault_pd3</code></td>
+<td>all</td>
+<td>Guest access fault: MOVE16 line data 3 (PD3).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="millicode-entry-points">Millicode entry points<a class="headerlink" href="#millicode-entry-points" title="Permanent link">&para;</a></h2>
+<p><strong>insn</strong>: Guest instruction not handled by the PLA. Target = dispatch_base[opword].</p>
+<ul>
+<li><code>x1</code>: opword (zero-extended)</li>
+<li><code>x2</code>: extension words 0:1 (word 0 in bits 31:16)</li>
+<li><code>x3</code>: extension words 2:3</li>
+<li><code>x4</code>: address of the next sequential guest instruction</li>
+</ul>
+<p><strong>exception</strong>: Guest exception raised by a guest access fault, gfault, or a decode-time condition (illegal, privilege, line A/F).</p>
+<ul>
+<li><code>x1</code>: vector number (2 for an access fault)</li>
+<li><code>x2</code>: guest PC to stack (gpc when raised; the faulting instruction for access faults)</li>
+<li><code>x3</code>: address of the instruction that raised it (format 2 frames)</li>
+</ul>
+<p>Access faults (vector 2) leave the 68040 frame fields in the fault_* and wb* CSRs.</p>
+<p><strong>interrupt</strong>: Taken at a guest instruction boundary when the pending level exceeds the SR mask.</p>
+<ul>
+<li><code>x1</code>: interrupt level</li>
+<li><code>x2</code>: vector number (from the interrupt acknowledge; 24 + level when autovectored)</li>
+</ul>
+<p><strong>trace</strong>: Taken after gexit when trace is pending.</p>
+<ul>
+<li><code>x1</code>: address of the traced instruction</li>
+</ul>
+<p><strong>reset</strong>: Power-on and RESET. All registers undefined.</p>
+<p><strong>mfault</strong>: Internal millicode error (misaligned hidden access, return-stack overflow/underflow, illegal micro-instruction). Halts for debug.</p>
+<ul>
+<li><code>x1</code>: cause</li>
+<li><code>x2</code>: millicode PC</li>
+</ul>
+<hr />
+<p><em>Generated from <a href="https://github.com/dsheffie/uisa/tree/6aa5291">dsheffie/uisa</a> 6aa5291 (wip/m68k-fp1).</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "navigation.indexes", "navigation.tracking", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>

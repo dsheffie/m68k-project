@@ -1,0 +1,1477 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A 68040 on an out-of-order core: the uisa micro-op ISA, its millicode and compiler, the core, and the q800sim reference simulator.">
+      
+      
+      
+        <link rel="canonical" href="https://dsheffie.github.io/m68k-project/uisa/ucc/">
+      
+      
+        <link rel="prev" href="../flows/">
+      
+      
+        <link rel="next" href="../softfloat/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
+    
+    
+      
+        <title>The ucc compiler - Project m68k</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ucc-the-uisa-millicode-compiler" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Project m68k" class="md-header__button md-logo" aria-label="Project m68k" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Project m68k
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              The ucc compiler
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Project m68k" class="md-nav__button md-logo" aria-label="Project m68k" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    Project m68k
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../q800sim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    q800sim
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    uisa
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    uisa
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rationale/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design rationale
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../flows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PLA flow coverage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The ucc compiler
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The ucc compiler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Language
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#64-bit-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        64-bit types
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intrinsics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intrinsics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-idea-allocate-in-ssa-so-fits-without-spilling-is-a-static-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The idea: allocate in SSA, so "fits without spilling" is a static check
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rules-the-compiler-enforces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules the compiler enforces
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#program-mode-program" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Program mode (--program)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#not-done-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Not done yet
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../softfloat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SoftFloat in millicode
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Language
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#64-bit-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        64-bit types
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intrinsics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intrinsics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-idea-allocate-in-ssa-so-fits-without-spilling-is-a-static-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The idea: allocate in SSA, so "fits without spilling" is a static check
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rules-the-compiler-enforces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules the compiler enforces
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#program-mode-program" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Program mode (--program)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#not-done-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Not done yet
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="ucc-the-uisa-millicode-compiler">ucc: the uisa millicode compiler<a class="headerlink" href="#ucc-the-uisa-millicode-compiler" title="Permanent link">&para;</a></h1>
+<p><code>ucc</code> compiles a small subset of C to uisa millicode assembly that
+<code>tools/uisa.py</code> assembles. It exists because millicode that is too large to
+write by hand (SoftFloat-style extended-precision FP first) still has to obey
+the millicode rules: no memory stack, no spilling, a 4-deep hardware return
+stack, and register allocation across the whole program.</p>
+<p>A flex/bison front end builds an AST whose nodes emit three-address code
+straight into basic blocks. The middle end builds SSA (Lengauer-Tarjan
+dominators, dominance frontiers, liveness-pruned phi placement, renaming
+along the dominator tree) and optimizes it. The back end selects uisa
+instructions, allocates registers for the whole program at once while the
+code is still in SSA, and only then takes it out of SSA with parallel copies.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>make compiler                       # CMake build into build/compiler (needs flex, bison 3, z3, python3 + PyYAML)
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>build/compiler/ucc [-o out.s] [-v] [--dump-tac] [-O0|-O2] [--rlimit n] file.c
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>python3 compiler/tests/test_ucc.py [iterations [name]]  # compiler tests (also run by `make`)
+</code></pre></div>
+<p>z3 is found under <code>/opt/local</code> (MacPorts: <code>sudo port install z3</code>),
+<code>/opt/homebrew</code> or <code>/usr/local</code>. <code>-v</code> prints the size of the allocation
+problem, the move cost z3 reached, the greedy allocation's cost and the z3
+resource units used.</p>
+<p>Millicode written in C lives in <code>millicode/*.c</code>. When a <code>.c</code> file is listed in
+<code>millicode/dispatch.yaml</code>, <code>tools/gen_millicode.py</code> compiles it to
+<code>build/millicode/&lt;name&gt;.s</code> and assembles it with the hand-written sources.
+Labels must be unique across all sources (checked). <code>millicode/bitfield.c</code>
+(BFTST/BFEXTU/BFEXTS/BFFFO) is the first routine built this way.</p>
+<h2 id="language">Language<a class="headerlink" href="#language" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Types: <code>u8 u16 u32 u64 s8 s16 s32 s64</code>, plus <code>int</code> (= <code>s32</code>), <code>unsigned</code>
+  (= <code>u32</code>) and <code>void</code>. Every value is kept canonical for its type (u8
+  zero-extended, s8 sign-extended, ...), so promotion costs nothing.</li>
+<li>Integer constants follow C with <code>s32 u32 s64 u64</code> in place of <code>int
+  unsigned long long unsigned long long</code>: the first type that holds the value
+  (unsigned only for hex/octal or with a <code>u</code> suffix); <code>ll</code>/<code>ull</code> force 64 bits.</li>
+<li>C's integer promotions and usual arithmetic conversions; casts. <code>&gt;&gt;</code> is
+  arithmetic on signed and logical on unsigned (promoted) operands; <code>/ %</code>
+  divide signed or unsigned the same way. <code>s64</code> holds every <code>u32</code>, so
+  <code>s64 op u32</code> is <code>s64</code>, as in C.</li>
+<li>Operators: <code>+ - * / % &amp; | ^ ~ &lt;&lt; &gt;&gt; ! &amp;&amp; || ?:</code>, comparisons, <code>=</code> and the
+  compound assignments, prefix and postfix <code>++ --</code>.</li>
+<li>Statements: blocks, declarations anywhere (with initializers), <code>if/else</code>,
+  <code>while</code>, <code>do/while</code>, <code>for</code> (with a declaration), <code>switch</code> with fallthrough
+  (<code>case</code> labels directly inside the switch body), <code>break</code>, <code>continue</code>,
+  <code>return</code>.</li>
+<li>Functions with parameters and a return value; global and local <code>const</code>
+  integer declarations (constant expressions). Functions may be called before
+  their definition.</li>
+<li><code>struct name { fields };</code> with scalar or struct fields, value semantics
+  (copy, assign, pass, return; <code>.field</code> access and assignment), and
+  <code>typedef type name;</code>. After its definition a struct's name is a type
+  name, as in C++.</li>
+<li><code>inline</code> functions are expanded at every call: no call instruction, no
+  return-stack depth, no register-allocation boundary. Only inline functions
+  take reference parameters (<code>u64 &amp;z</code>), which name the caller's variable, as
+  SoftFloat's pointer out-parameters do, and only they return values wider
+  than two words. Recursion through inline functions is an error.</li>
+<li>Called (non-inline) functions take any number of argument words (a u64 is
+  two, a struct its fields' words) and return at most two words.</li>
+<li><code>#include "file"</code> (relative to the including file; each file is read at
+  most once; <code>#pragma once</code> is accepted and redundant). Diagnostics name the
+  included file and its line.</li>
+<li><code>entry void name(void)</code> declares a millicode entry point: it is dispatched
+  to (never called), may use the entry-ABI intrinsics, cannot return, and
+  every path must end in a no-return intrinsic (<code>__gexit</code>, <code>__gfault</code>, ...).</li>
+<li><code>extern T name(params) asm("ARGS -&gt; RESULTS; reads R...; clobbers R...;
+  depth N");</code> declares a hand-written routine in <code>millicode/*.s</code> and its
+  register contract, so C millicode can call shared assembly helpers. ARGS
+  and RESULTS name one x register per word (a two-word struct result comes
+  back in two); <code>reads</code> lists entry-ABI registers (x1-x4) the routine reads,
+  which the compiler passes implicitly and which keep their values up to the
+  call (so only entry functions may call such a routine); <code>clobbers</code> lists
+  the other registers it may write (<code>x16-x19</code> ranges allowed); <code>depth</code> is
+  the return-stack entries it uses, its own call included (default 1). The
+  argument, result and clobbered registers are all treated as written by the
+  call: nothing live across it is allocated to them, and a fixed register
+  (an entry-ABI value) still needed after the call is an error. Example
+  (<code>millicode/bitfield.c</code>):
+  <code>extern ea_res ea_addr(u32 ea, u32 size, u32 ext_off) asm("x20 x21 x22 -&gt;
+  x23 x4; reads x2 x3 x4; clobbers x16-x19 x24-x26; depth 3");</code></li>
+<li>Not in the millicode language: pointers, arrays, unions, floats, globals
+  that are not constants, the comma operator, char literals, string literals
+  outside <code>asm("...")</code>, and the preprocessor beyond <code>#include</code>. Pointers,
+  arrays, mutable globals and the comma operator exist in program mode
+  (below) and are errors in millicode.</li>
+</ul>
+<h2 id="64-bit-types">64-bit types<a class="headerlink" href="#64-bit-types" title="Permanent link">&para;</a></h2>
+<p>The front end splits every <code>u64</code>/<code>s64</code> value into two 32-bit words (a
+variable becomes two source variables), so SSA, allocation and emission only
+ever see 32-bit values and each word is allocated, and dies, on its own.</p>
+<table>
+<thead>
+<tr>
+<th>operation</th>
+<th>lowering</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>+ -</code></td>
+<td>word add/sub, carry/borrow with <code>sltu</code> (4 instructions)</td>
+</tr>
+<tr>
+<td><code>*</code></td>
+<td><code>mul</code> + <code>mulhu</code> + two cross <code>mul</code>s; <code>(u64)a * b</code> with 32-bit operands is <code>mul</code> + <code>mulhu</code></td>
+</tr>
+<tr>
+<td><code>&lt;&lt; &gt;&gt;</code> constant</td>
+<td>two or three word shifts</td>
+</tr>
+<tr>
+<td><code>&lt;&lt; &gt;&gt;</code> variable</td>
+<td>branch-free, 14 instructions; the count is taken mod 64</td>
+</tr>
+<tr>
+<td><code>/ %</code></td>
+<td>inline, no loop over bits (Hacker's Delight <code>divdu</code>/<code>divlu</code>): both high words 0 is one <code>divu</code>/<code>remu</code>; a 32-bit divisor is one <code>divu</code> for the high word plus a 64/32 step that estimates two 16-bit quotient digits with <code>divu</code> and corrects each at most twice; a wider divisor is normalized with <code>clz</code>, the same 64/32 step estimates the 32-bit quotient, and one multiply-subtract fixes it. Both paths share one copy of the 64/32 step; a divisor known to fit 32 bits (<code>u64 / u32</code>) emits only that path. About 110 instructions per division site, 25-60 executed. Signed divides the magnitudes. Unsigned powers of two become shifts and masks. Division by zero is undefined, as in C</td>
+</tr>
+<tr>
+<td>comparisons</td>
+<td>as branches: high words first, then the low words unsigned; as values: <code>slt</code>/<code>sltu</code> on the high words, combined</td>
+</tr>
+<tr>
+<td>calls</td>
+<td>a 64-bit argument takes two parameter registers (low word first); a 64-bit result comes back in two return registers, read by <code>Call</code> + <code>CallRes</code> and copied out as one parallel copy</td>
+</tr>
+</tbody>
+</table>
+<p>Intrinsic arguments take the low word of a 64-bit value (C conversion to
+<code>u32</code>).</p>
+<h2 id="intrinsics">Intrinsics<a class="headerlink" href="#intrinsics" title="Permanent link">&para;</a></h2>
+<p>A <code>switch</code> with three or more cases becomes an n-way <code>bx</code> jump table (one
+<code>jal</code> slot per value) when its cases are small: <code>switch ((x &gt;&gt; k) &amp; (2^w -
+1))</code> (k and the mask literals or named constants, w &lt;= 15) indexes the table
+with that field of x directly, with no range check; any other 32-bit switch
+whose cases all lie in 0..63 checks the range (one branch to default) and
+then indexes. Other switches (negative or larger cases, 64-bit values, fewer
+cases) are compare chains.</p>
+<p><code>(x &gt;&gt; k) &amp; (2^w - 1)</code> compiles to one <code>bfextui</code> (the assembler's <code>extract
+rd, x, k, w</code>), as does a mask too wide for <code>andi</code>.</p>
+<p><code>compiler/gen_intrinsics.py</code> generates the intrinsic table from
+<code>spec/uisa.yaml</code> through <code>tools/uisa.py</code>; nothing is hand-maintained. Every
+uisa instruction except millicode control flow (<code>jal jalr call ret b.* bcc.*</code>,
+which the compiler emits itself) and <code>lui/auipc</code> is available as
+<code>__&lt;mnemonic&gt;</code> with <code>.</code> replaced by <code>_</code>:</p>
+<table>
+<thead>
+<tr>
+<th>form</th>
+<th>example</th>
+<th>C signature</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>base op</td>
+<td><code>clz rd, rs1</code></td>
+<td><code>u32 __clz(u32)</code></td>
+</tr>
+<tr>
+<td>guest op, three-address / zfill</td>
+<td><code>add.32 rd, rs1, rs2</code></td>
+<td><code>u32 __add_32(u32 a, u32 b)</code></td>
+</tr>
+<tr>
+<td>guest op, merge (rd tied to rs1)</td>
+<td><code>add.8 rd, rs2</code></td>
+<td><code>u32 __add_8(u32 old, u32 b)</code></td>
+</tr>
+<tr>
+<td>guest compare (flags only)</td>
+<td><code>cmp.16 rs1, rs2</code></td>
+<td><code>void __cmp_16(u32, u32)</code></td>
+</tr>
+<tr>
+<td>immediate forms</td>
+<td><code>addi.32 rd, rs1, imm6</code></td>
+<td><code>u32 __addi_32(u32, const)</code></td>
+</tr>
+<tr>
+<td>load / probe</td>
+<td><code>ld.32.gd rd, d(rs1)</code></td>
+<td><code>u32 __ld_32_gd(u32 addr)</code></td>
+</tr>
+<tr>
+<td>store</td>
+<td><code>st.16.gd rd, d(rs1)</code></td>
+<td><code>void __st_16_gd(u32 addr, u32)</code></td>
+</tr>
+<tr>
+<td>store with base writeback</td>
+<td><code>st.32.pre.gd rs2, d(rs1)</code></td>
+<td><code>u32 __st_32_pre_gd(u32 base, u32 v, const d)</code></td>
+</tr>
+<tr>
+<td>system</td>
+<td><code>gfault imm</code>, <code>csrr rd, csr</code></td>
+<td><code>void __gfault(const)</code>, <code>u32 __csrr(const)</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Arguments that are immediates in the instruction must be constant
+  expressions in range (checked against the spec's field widths and scales).</li>
+<li>Address arguments: <code>base + constant</code> folds into the 12-bit displacement;
+  constant addresses use <code>x0</code> or <code>lui</code>.</li>
+<li>Tied forms (merge, <code>divu.16</code>, <code>bfinsi</code>, writeback stores, <code>gpushr</code>) take the
+  old destination value as their first argument; the allocator prefers to
+  give the result the same register and otherwise inserts one move.</li>
+<li><code>__rdg(i)</code> / <code>__wrg(i, v)</code> with a constant <code>i</code> name the guest register
+  directly (<code>d3</code>, <code>gpc</code>, ...) and the read feeds its uses directly when no
+  write can intervene; with a run-time index they emit <code>rdg</code>/<code>wrg</code>.</li>
+<li>Entry-ABI values (entry functions only): <code>__opword()</code> (x1), <code>__ext01()</code>
+  (x2), <code>__ext23()</code> (x3), <code>__next_pc()</code> (x4), from the spec's <code>insn</code> entry
+  point.</li>
+<li>Predefined constants from the spec: <code>D0..D7 A0..A7 GPC GSR</code> (indices for
+  <code>__rdg</code>/<code>__wrg</code>), <code>CSR_&lt;NAME&gt;</code> for every CSR, <code>CCR_X CCR_N CCR_Z CCR_V
+  CCR_C</code> (bit masks in the <code>rdccr</code>/<code>wrccr</code> layout).</li>
+<li><code>__gexit __gfault __gfaultr __halt __brk</code> end control flow.</li>
+<li>Flags are not modelled as values: intrinsics that read or write the renamed
+  flags keep their program order, and the compiler never reorders anything.</li>
+</ul>
+<h2 id="the-idea-allocate-in-ssa-so-fits-without-spilling-is-a-static-check">The idea: allocate in SSA, so "fits without spilling" is a static check<a class="headerlink" href="#the-idea-allocate-in-ssa-so-fits-without-spilling-is-a-static-check" title="Permanent link">&para;</a></h2>
+<p>Millicode has no stack, so it cannot spill. The compiler therefore has to
+decide, before it allocates anything, whether every function fits in the 31
+allocatable registers, and when one does not, say exactly where. For
+register allocation in general that question is graph colouring, which is
+NP-complete: the only way to know whether k registers suffice is to try.
+SSA form removes the difficulty:</p>
+<ul>
+<li><strong>The interference graph of an SSA program is chordal.</strong> In strict SSA
+  every use is dominated by the value's single definition, so each live range
+  is a connected subtree of the dominator tree, and the intersection graph of
+  subtrees of a tree is chordal (Hack, Grund and Goos; Bouchez, Darte and
+  Rastello; Brisk et al., all 2005-06).</li>
+<li><strong>For a chordal graph the chromatic number equals the largest clique</strong>,
+  and colouring the vertices greedily in a perfect elimination order uses
+  exactly that many colours. For SSA that order is simply the definitions in
+  dominator-tree order.</li>
+<li><strong>The largest clique is the most values live at one program point.</strong>
+  Subtrees of a tree that pairwise intersect share a common node (the Helly
+  property), so a clique of live ranges is a set of values all live at the
+  same point. MaxLive, the size of the largest live set, falls out of one
+  liveness scan.</li>
+</ul>
+<p>So a function needs exactly MaxLive registers, no more and no fewer. ucc
+computes it before allocation and rejects a function over 31 with the names
+of the values live at the peak, and when the check passes the greedy
+allocator (stage 1 below) is guaranteed to succeed; z3 only reduces moves.
+The rest of the design keeps that bound exact:</p>
+<ul>
+<li><strong>Leave SSA after allocation.</strong> Phis become parallel copies on the
+  incoming edges, which only permute values already in registers: a cycle
+  goes through a register free on that edge when there is one, otherwise
+  three-xor swaps. Leaving SSA never needs an extra register.</li>
+<li><strong>Calls.</strong> Without a stack, a value live across a call must sit in a
+  register that the callee, and everything it calls, never writes. A
+  function's need is therefore MaxLive, or for some call the values live
+  across it plus the callee's own need, whichever is larger; with recursion
+  ruled out the call graph is acyclic, so this is computed callees first and
+  checked against 31 too. There is no fixed calling convention: every
+  function's parameter and result registers are part of the one
+  whole-program solution.</li>
+<li><strong>Constraints that would break chordality are preferences.</strong> Copies, tied
+  operands (merge forms), phi operands, call arguments and results only ask
+  for the same register; when they cannot have it the emitter adds a move.
+  The values pinned to registers (entry-ABI values in x1-x4) are all defined
+  at function entry, the start of the elimination order.</li>
+<li><strong>Optimizations answer to the same bound.</strong> Value numbering and loop
+  hoisting lengthen live ranges, so constants are shared only within a block
+  and loop hoists are undone in any function they push over the budget.</li>
+</ul>
+<p>Program mode (<code>--program</code>) has a stack and spills, so it uses a conventional
+Chaitin-Briggs allocator instead (below).</p>
+<h2 id="rules-the-compiler-enforces">Rules the compiler enforces<a class="headerlink" href="#rules-the-compiler-enforces" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>No recursion.</strong> The call graph must be acyclic; a cycle is reported with
+  its path.</li>
+<li><strong>Return-stack depth.</strong> Every chain of nested calls fits
+  <code>call_stack_depth</code> (4) from the spec, counting the helper's own frame for
+  helpers.</li>
+<li><strong>No spilling.</strong> Values live at once never exceed the 31 allocatable x
+  registers (<code>x1-x31</code>). Over budget is a compile error that names the live
+  values, before allocation; a second check adds up values live across each
+  call and what the callee chain needs.</li>
+<li><strong>Whole-program allocation.</strong> One z3 problem covers every function. Hard
+  constraints: interfering values differ; entry-ABI values stay in x1-x4; a
+  value live across a call never sits in a register the callee or anything it
+  calls writes. Soft constraints, weighted by loop depth: phi operands,
+  copies, tied operands, call arguments and results, and return values share
+  a register. Each function's parameter and return registers are part of the
+  solution, so there is no fixed calling convention and no caller/callee-saved
+  split. The result is verified independently of z3 before emission.</li>
+<li><strong>How the allocation is found.</strong> <code>-O0</code> (the default, used by <code>make</code> and
+  the tests) stops after stage 1: a valid allocation in a fraction of a
+  second. <code>-O2</code> is for deploy builds (<code>make release</code> compiles the millicode
+  with it) and runs all three stages. Everything is deterministic (z3 runs
+  under a resource budget, <code>--rlimit</code>, default 300M, never a wall-clock
+  timeout, and the problem is keyed by value index, so the same source gives
+  the same millicode on every machine):</li>
+<li><em>Greedy.</em> Functions callees first, values in dominance order (chordal
+     coloring), each taking a register its colored preference partners use;
+     then single values move where more partners are. Always feasible when
+     the pressure checks pass; it is z3's starting point and the fallback.</li>
+<li><em>Whole program</em> (<code>-O2</code>). Up to 700 values, z3 gets a third of the budget to
+     solve the whole problem and prove it optimal (<code>t_u64div</code>, 649 values:
+     30 s; <code>t_u64div2</code>, 570: 14 s; bitfield.c: well under a second).</li>
+<li><em>Neighbourhoods</em> (<code>-O2</code>). Otherwise, each step frees a small set of values,
+     fixes every other one, and z3 solves that piece optimally as its own
+     small problem (fixed neighbours become excluded registers, preferences
+     to fixed values become one-register soft literals, call clobbers become
+     exact exclusions). Loops go first, innermost first, each freeing the
+     values of its own blocks (nested loops are already settled) and their
+     interference neighbours, so the moves that execute most are optimal
+     given their surroundings; then the values around the heaviest remaining
+     moves, until nothing improves or the budget is spent.</li>
+</ul>
+<p><code>-v</code> reports the stage reached, how many loops were settled optimally and
+  the remaining move cost per loop depth. On a SoftFloat-sized benchmark
+  (<code>compiler/tests/bench_alloc.c</code>,
+  1674 values, four outer loops around inlined 64-bit divisions, inner
+  correction loops) the weighted move cost goes from 1060 (greedy) to about
+  460 in 80 s, with every inner loop move removed; what remains is in the
+  large outer loop bodies.
+- <strong>SSA optimization.</strong> Repeated to a fixed point: constant folding and
+  algebraic simplification, copy propagation, dead-code removal, CFG
+  cleanup, and global value numbering: a walk of the dominator tree with a
+  scoped table of the values computed so far (ALU operations, extensions,
+  frame addresses and the pure base intrinsics, with commutative operands
+  ordered), so an expression that a dominating one already computed is
+  reused instead of recomputed. Anything that reads state is never merged
+  (guest registers, CSRs, guest flags, memory intrinsics); program-mode loads
+  are reused within a block until the next store or call. After
+  legalization a second pass merges the constants that legalization put in
+  registers: within each block in millicode (a constant kept live across
+  blocks would hold a register everywhere, and millicode cannot spill),
+  across the dominator tree in program mode. Together they remove about 4%
+  of the millicode (<code>fpu.c</code>, the softfloat tests) and 12% of program-mode
+  code, which also runs about 17% fewer instructions.
+- <strong>Loop-invariant code motion.</strong> Once the rest has settled, and again
+  after legalization (so materialized constants and <code>lui</code> address halves
+  move too): pure values whose operands are all defined outside a loop move
+  to its preheader (the one outside predecessor, or a new block on that
+  edge), innermost loops first. uisa ALU operations never fault, so a value
+  the loop might not have computed is safe to compute early; loads and state
+  reads stay. Hoisting stops when a loop's estimated pressure (SSA liveness)
+  reaches the register budget. Program mode leaves loops that call alone (a
+  value live across the call needs a callee-saved register, and its save
+  and restore cost more code than the hoist saves). Millicode logs every
+  hoist; when a function, with what it calls, then exceeds the registers,
+  its hoists go back to the top of their loop headers before allocation
+  (<code>-v</code> reports it). Program mode runs about 15% fewer instructions with
+  code size unchanged.
+- <strong>Code hoisting.</strong> When every successor of a branch is reached only from
+  it and all of them compute the same pure value from operands available at
+  the branch, the value is computed once before the branch. In program mode
+  the same applies after legalization to constants (not in millicode, for
+  the reason constants are only merged within a block).
+- <strong>Tail merging.</strong> On the final assembly, after allocation, where
+  identical text is identical work: two blocks that end in the same
+  instructions and continue to the same place (the same jump target or
+  fall-through label, or the same return or no-return instruction) keep one
+  copy, and the other jumps into it. Then branches to blocks that only jump
+  go straight to the destination, jumps to the next label disappear, and
+  blocks nothing reaches are deleted. A <code>bx</code> jump table is never touched.
+  It trades a jump executed on the merged path for the instructions saved.
+- <strong>Out of SSA.</strong> Critical edges are split; phis become parallel copies on
+  the incoming edge. A cycle of three or more copies goes through a scratch
+  register when one is free on that edge (one the function or its callees
+  already write, so callers never keep a value there across the call): k + 1
+  moves for k copies. Two-copy cycles, and cycles with no free register, are
+  broken with three-xor swaps.
+- <strong>Immediates and branches.</strong> 14-bit ALU immediates (signed for <code>addi/slti</code>,
+  zero-extended for <code>andi/ori/xori</code>), 12-bit memory displacements, 11-bit
+  compare-and-branch displacements: a branch that does not reach becomes the
+  inverted branch around a <code>jal</code>.
+- Uses of variables that may be unassigned, falling off the end of a non-void
+  function or an entry function, and calling an entry function are errors.</p>
+<h2 id="program-mode-program">Program mode (<code>--program</code>)<a class="headerlink" href="#program-mode-program" title="Permanent link">&para;</a></h2>
+<p><code>ucc --program</code> compiles ordinary C programs (csmith tests, benchmarks) to
+code that runs on the uisa ISS and the uisa RTL. Millicode mode, the default,
+is unchanged: same rules, same z3 allocator, byte-identical output.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>build/compiler/ucc --program -o prog.s prog.c       # code + data section
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>python3 compiler/prog/uimage.py prog.s -o prog.hex   # program image
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>build/prun prog.hex                                  # run on the ISS: "result &lt;x10&gt; steps &lt;n&gt;"
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>python3 compiler/prog/test_prog.py [N [seed]] [--csmith N]   # differential tests vs the host cc
+</code></pre></div>
+<p><strong>Pipeline.</strong> The front end, SSA construction and SSA cleanups are shared
+with millicode. Then (<code>progback.cpp</code>): out of SSA first (critical edges split,
+phis become parallel copies sequentialized before allocation, a cycle through
+a new temporary); ABI lowering; per function, Chaitin-Briggs graph colouring
+with iterated register coalescing (George &amp; Appel: conservative Briggs and
+George coalescing, freezing, optimistic spilling); spilled values get stack
+slots and short-lived temporaries, and allocation repeats until nothing
+spills; then the frame is laid out and the code emitted. The recursion and
+return-stack rules do not apply: calls are <code>jal x1, f</code> and returns
+<code>jalr x0, x1, 0</code>, with ra saved in the frame, so recursion and call depth are
+limited only by the stack.</p>
+<p><strong>Calling convention.</strong></p>
+<table>
+<thead>
+<tr>
+<th>registers</th>
+<th>use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x0</td>
+<td>zero</td>
+</tr>
+<tr>
+<td>x1</td>
+<td>return address (saved in the frame by non-leaf functions)</td>
+</tr>
+<tr>
+<td>x2</td>
+<td>stack pointer (grows down, 8-byte aligned frames)</td>
+</tr>
+<tr>
+<td>x10-x17</td>
+<td>argument words 1-8; x10-x11 result words</td>
+</tr>
+<tr>
+<td>x3-x7, x10-x17, x28-x30</td>
+<td>caller-saved (a call clobbers them)</td>
+</tr>
+<tr>
+<td>x8, x9, x18-x27</td>
+<td>callee-saved (saved and restored when a function uses them)</td>
+</tr>
+<tr>
+<td>x31</td>
+<td>reserved for the emitter (frame offsets beyond the 12-bit displacement)</td>
+</tr>
+</tbody>
+</table>
+<p>Argument words past the eighth go on the stack: word 9 at <code>sp + 0</code> of the
+caller at the call, word 10 at <code>sp + 4</code>, ... A 64-bit value is two words (low
+first); a struct its fields' words. A result of more than two words (a large
+struct) goes through a hidden first argument: the caller passes the address
+of a frame object and the callee stores the result there.</p>
+<p>Frame (from sp after the prologue, upward): outgoing stack arguments; locals
+in memory (arrays, address-taken variables); spill slots; saved callee-saved
+registers; saved ra. The incoming stack arguments follow the frame.</p>
+<p><strong>Memory map.</strong> Everything is in the hidden (physical) space, accessed with
+<code>ld.*.h</code> / <code>st.*.h</code>; memory is flat and identity-mapped, big-endian:</p>
+<table>
+<thead>
+<tr>
+<th>address</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0x00000000</code></td>
+<td>code: <code>_start</code> (sets sp, <code>jal x1, main</code>, <code>halt 0</code>), then the functions</td>
+</tr>
+<tr>
+<td><code>0x00100000</code></td>
+<td>data: every global, initialized (zero where no initializer says otherwise)</td>
+</tr>
+<tr>
+<td>below <code>0x00800000</code></td>
+<td>the stack (sp starts at <code>0x00800000</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Globals are addressed absolutely (<code>lui</code> + displacement), so a global's
+address is a link-time constant usable in initializers (<code>u32 *p = &amp;g[3];</code>).</p>
+<p><strong>Image and entry convention.</strong> <code>uimage.py</code> assembles the code with
+<code>tools/uisa.py</code> and writes a text image: <code>@&lt;byte address&gt;</code> lines start a
+segment, each following line is one big-endian 32-bit word (<code>#</code> lines are
+comments). Execution starts at address 0; the program ends with <code>halt 0</code>
+and main's return value in x10 (for csmith programs, the checksum).
+<code>compiler/prog/prun.cc</code> is the reference loader and ISS; it rejects
+misaligned or out-of-range accesses, guest-space accesses and millicode-only
+control flow. The instructions used are the uisa base operations, <code>jal</code>,
+<code>jalr</code>, <code>lui</code>, <code>halt</code>, and the <code>.h</code> loads and stores.</p>
+<p><strong>Language additions</strong> (program mode only):
+- Global variables with initializers (constant expressions, including
+  addresses of globals and their elements), <code>static</code> (ignored: one
+  translation unit) and <code>const</code> on aggregates (read-only data is ordinary
+  data).
+- Pointers (any depth, to integers, structs, pointers and <code>void</code>), <code>&amp;</code>, <code>*</code>,
+  <code>-&gt;</code>, pointer arithmetic scaled by the pointee size, pointer differences,
+  comparisons, casts between pointers and integers.
+- Arrays (any number of dimensions, of integers, pointers and structs), global
+  and local, with braced initializers (the elements not named are zero);
+  <code>a[i]</code> is <code>*(a + i)</code>; arrays decay to pointers; array parameters are
+  pointers.
+- Array fields in structs (<code>struct s { u16 v[4]; u8 m[2][3]; };</code>, dimensions
+  are integer constant expressions). A struct value carries its arrays:
+  assignment, by-value arguments and results copy every element (a result
+  over 2 words goes through the hidden pointer, so large structs are copied
+  through memory); <code>s.v</code> on its own decays to a pointer as any array does.
+- <code>sizeof(type)</code>, <code>sizeof(type[n]...)</code> and <code>sizeof expr</code>: a <code>u32</code> constant
+  from program mode's layout (so it differs from the LP64 host for pointers
+  and for structs with 64-bit fields). The operand is not evaluated.
+- Locals whose address is taken, arrays, structs that contain arrays and
+  braced-initialized locals live in the frame (so do by-value struct
+  parameters that contain arrays); every other local stays in registers.
+- The comma operator; prototypes (<code>int f(int);</code>); <code>main</code> may take arguments
+  (they are not set).
+- C's integer keywords and their combinations with LP64 sizes, as on the
+  host: <code>char</code> 8 (signed), <code>short</code> 16, <code>int</code> 32, <code>long</code> and <code>long long</code> 64,
+  <code>signed</code>/<code>unsigned</code>; an <code>L</code> suffix makes a constant 64-bit like <code>LL</code>. So a
+  csmith program means the same thing on the host and on uisa.
+- Layout: big-endian, natural alignment capped at 4 (64-bit values are two
+  words, high word first), structs padded as C pads them. Pointers are 32
+  bits.
+- Intrinsics: only the uisa base operations (no guest registers, flags,
+  memory spaces or millicode control).</p>
+<p>Not supported yet: function pointers, unions, floats, bitfields, <code>volatile</code> (csmith is run without unions,
+bitfields, floats and volatiles), pointers to arrays (<code>int (*p)[4]</code>), string
+and char literals, varargs.</p>
+<p><strong>Tests</strong> (<code>compiler/prog/</code>). <code>test_prog.py</code> compiles each program twice:
+natively with the host <code>cc</code> (<code>host_prog.h</code> provides ucc's type names,
+<code>-fwrapv</code>) and with <code>ucc --program</code> + <code>uimage.py</code> + <code>prun</code>, and compares the
+results. Programs: <code>tests/*.c</code> (hand-written: calls and recursion, memory and
+pointers, spilling, large frames and stack arguments, array fields and
+sizeof), <code>tests_csmith/*.c</code>
+(csmith-format), then random programs from <code>gen_prog.py</code>, a csmith-style
+generator (globals, arrays, structs, pointers to pointers, loops, switch,
+recursion; UB-free by construction; main returns the CRC of every global).
+With csmith installed (<code>csmith</code> on PATH or <code>CSMITH=...</code>), <code>--csmith N</code> also
+runs N csmith programs: both builds are preprocessed with
+<code>compiler/prog/csmith/csmith.h</code>, a stand-in for csmith's runtime (its safe
+math names, the CRC, <code>platform_main_end</code> returning the checksum). csmith has
+no MacPorts port; build it from source without sudo:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>git clone https://github.com/csmith-project/csmith ~/code/csmith
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>cmake -S ~/code/csmith -B ~/code/csmith/build -DCMAKE_INSTALL_PREFIX=$HOME/code/csmith/local
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>cmake --build ~/code/csmith/build -j8 &amp;&amp; cmake --install ~/code/csmith/build
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>CSMITH=~/code/csmith/local/bin/csmith python3 compiler/prog/test_prog.py 0 1 --csmith 200
+</code></pre></div>
+<p>(<code>local</code>, not <code>install</code>: on a case-insensitive file system that name is
+csmith's <code>INSTALL</code> file.) csmith programs can run for minutes or forever;
+like csmith's own scripts, the driver skips (and counts) any program that
+runs longer than 5 s natively or 500M ISS steps.</p>
+<h2 id="layout">Layout<a class="headerlink" href="#layout" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>file</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scanner.l</code>, <code>parser.y</code></td>
+<td>front end</td>
+</tr>
+<tr>
+<td><code>ast.h</code>, <code>ast.cpp</code></td>
+<td>AST, semantic checks, C conversions, TAC generation</td>
+</tr>
+<tr>
+<td><code>tac.h</code>, <code>tac.cpp</code></td>
+<td>the three-address code (one <code>Reg</code> class before and after SSA)</td>
+</tr>
+<tr>
+<td><code>codegen.h</code>, <code>codegen.cpp</code></td>
+<td>CFG cleanup, dominators, SSA construction, SSA optimization (GVN, LICM)</td>
+</tr>
+<tr>
+<td><code>backend.h</code>, <code>backend.cpp</code></td>
+<td>legalization, liveness/interference, pressure checks, emission</td>
+</tr>
+<tr>
+<td><code>regalloc.cpp</code></td>
+<td>the z3 allocation model</td>
+</tr>
+<tr>
+<td><code>progback.cpp</code>, <code>emit.h</code></td>
+<td>program mode: out of SSA, ABI, iterated register coalescing, frames; shared emission</td>
+</tr>
+<tr>
+<td><code>prog/</code></td>
+<td>program mode tools and tests: <code>uimage.py</code>, <code>prun.cc</code>, <code>test_prog.py</code>, <code>gen_prog.py</code>, the csmith shim</td>
+</tr>
+<tr>
+<td><code>gen_intrinsics.py</code></td>
+<td>intrinsic table and ISA constants from <code>spec/uisa.yaml</code></td>
+</tr>
+<tr>
+<td><code>tests/</code></td>
+<td><code>test_ucc.py</code>: differential tests (ucc + uisa ISS vs native, random guest states) and expected compile errors</td>
+</tr>
+</tbody>
+</table>
+<h2 id="not-done-yet">Not done yet<a class="headerlink" href="#not-done-yet" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Allocation at SoftFloat scale.</strong> Large loop bodies (hundreds of values in
+  one loop) are only improved piecewise. Splitting such a loop into
+  overlapping windows along its blocks, or pre-coalescing safe copies to
+  shrink it, would let the loop pass settle them too.</li>
+<li><strong>Scratch memory.</strong> Explicit hidden-memory storage (<code>scratch_base</code>) for
+  state larger than the register file; no syntax for it yet.</li>
+<li><strong>The SoftFloat milestone.</strong> 80-bit extended precision for the 68040 FPU is
+  the next real program; it will probably need arrays in scratch memory, and will show whether z3 allocation scales (bitfield.c: 150
+  values, well under a second).</li>
+<li><strong>Faults before commits</strong> is not checked yet (intro.md says the compiler
+  will check it on SSA).</li>
+<li>Dead-flag selection of <code>.nf</code> forms, writing results straight into guest
+  registers (<code>__wrg(D2, x + 1)</code> currently computes into an x register and
+  moves), automatic inlining (only <code>inline</code> functions are inlined), calls
+  into hand-written millicode, and pointers or arrays through intrinsics
+  only.</li>
+</ul>
+<hr />
+<p><em>Generated from <a href="https://github.com/dsheffie/uisa/tree/6aa5291">dsheffie/uisa</a> 6aa5291 (wip/m68k-fp1).</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "navigation.indexes", "navigation.tracking", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>
