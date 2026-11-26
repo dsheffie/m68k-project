@@ -385,6 +385,33 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="formal-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formal spec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
     
     
       
@@ -415,7 +442,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -437,14 +464,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -707,11 +734,17 @@ take the PLA path (see <a href="uisa/flows/">PLA flow coverage</a>).</p>
 <td>A functional Quadra 800 (68040) full-system simulator; the golden reference for uisa and the RTL, and a host for running uisa on real software</td>
 <td><a href="q800sim/">Overview</a></td>
 </tr>
+<tr>
+<td><a href="formal-spec/">Formal spec</a></td>
+<td>Boyer and Yu's MC68020 specification in Nqthm, lifted to SMT-LIB for z3; planned for proving the PLA templates implement each 68k instruction (in progress)</td>
+<td><a href="formal-spec/">Overview</a></td>
+</tr>
 </tbody>
 </table>
 <h2 id="source">Source<a class="headerlink" href="#source" title="Permanent link">&para;</a></h2>
 <ul>
 <li>uisa: <a href="https://github.com/dsheffie/uisa">github.com/dsheffie/uisa</a></li>
+<li>Formal spec: <a href="https://github.com/dsheffie/m68k-formal-spec">github.com/dsheffie/m68k-formal-spec</a></li>
 <li>The core and q800sim are not public yet.</li>
 </ul>
 
