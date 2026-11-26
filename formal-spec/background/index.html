@@ -1,0 +1,1037 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A 68040 on an out-of-order core: the uisa micro-op ISA, its millicode and compiler, the core, and the q800sim reference simulator.">
+      
+      
+      
+        <link rel="canonical" href="https://dsheffie.github.io/m68k-project/formal-spec/background/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../../uisa/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
+    
+    
+      
+        <title>Background - Project m68k</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#background-the-1992-mc68020-semantics-and-why-lift-it-into-smt" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Project m68k" class="md-header__button md-logo" aria-label="Project m68k" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Project m68k
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Background
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Project m68k" class="md-nav__button md-logo" aria-label="Project m68k" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    Project m68k
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../q800sim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    q800sim
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formal spec
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Formal spec
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Background
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Background
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-the-1992-work-modelled-the-68020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the 1992 work modelled the 68020
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-something-modern-and-smt-based" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why something modern and SMT-based
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-semantics-are-reusable-under-a-different-modelling-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The semantics are reusable under a different modelling approach
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sources
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../uisa/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    uisa
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    uisa
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../uisa/rationale/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design rationale
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../uisa/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../uisa/flows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PLA flow coverage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../uisa/ucc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The ucc compiler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../uisa/softfloat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SoftFloat in millicode
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-the-1992-work-modelled-the-68020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the 1992 work modelled the 68020
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-something-modern-and-smt-based" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why something modern and SMT-based
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-semantics-are-reusable-under-a-different-modelling-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The semantics are reusable under a different modelling approach
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sources
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="background-the-1992-mc68020-semantics-and-why-lift-it-into-smt">Background: the 1992 MC68020 semantics, and why lift it into SMT<a class="headerlink" href="#background-the-1992-mc68020-semantics-and-why-lift-it-into-smt" title="Permanent link">&para;</a></h1>
+<h2 id="how-the-1992-work-modelled-the-68020">How the 1992 work modelled the 68020<a class="headerlink" href="#how-the-1992-work-modelled-the-68020" title="Permanent link">&para;</a></h2>
+<p>Robert S. Boyer and Yuan Yu specified the MC68020 at UT Austin between about
+1989 and 1992. It was the core of Yu's PhD thesis (TR-93-09). They did it in
+Nqthm, the Boyer–Moore theorem prover. This is a different thing from the
+Boyer–Moore string-search algorithm, though it is by the same two people.
+Nqthm is an automated theorem prover for a first-order logic that is
+essentially pure Lisp: total recursive functions over natural numbers,
+integers, pairs and symbols, with proof by rewriting and induction.</p>
+<p><strong>An interpreter semantics.</strong> The machine is defined by an interpreter, not
+by axioms. A state is a 5-tuple: status, register file, pc, CCR and memory.
+The single-step function <code>stepi</code> decodes the instruction at the pc and returns
+the next state. <code>stepn(s, n)</code> applies it n times, stopping early when the
+status is no longer <code>'running</code>. Each instruction is an ordinary function:
+<code>add-ins</code> reads its operands through the effective-address calculation,
+computes the result, computes each flag with its own function (<code>add-c</code>,
+<code>add-v</code>, ...), and writes the result back. Anything outside the model stops
+the machine with a reason symbol, such as <code>'divu-overflow</code> or
+<code>'i-will-do-it-later</code> for the bitfields. Undefined behaviour therefore never
+becomes silently wrong.</p>
+<ul>
+<li><strong>Values:</strong> natural numbers, not bit-vectors. <code>head(x, n)</code> is
+  <code>x mod 2^n</code>, <code>add(n, x, y)</code> is <code>(x + y) mod 2^n</code>, and sign extension is
+  arithmetic on naturals. Bitwise AND is a recursion over the bits.</li>
+<li><strong>Memory:</strong> a pair of sparse binary trees indexed by address bits. One holds
+  bytes. The other is a protection map marking regions unavailable, ROM or RAM;
+  instructions have to come from ROM.</li>
+<li><strong>Size:</strong> the specification is 573 definitions, about 128 KB or 80 pages.
+  It covers about 80% of the user-mode instructions and every 68020
+  addressing mode, including memory-indirect and full-format indexing.</li>
+</ul>
+<p><strong>Why definitions rather than axioms.</strong> Every function was admitted under
+Nqthm's definitional principle, which proves it terminates. So the
+specification is guaranteed consistent, as consistent as elementary number
+theory, and it is executable. Running <code>stepn</code> inside Nqthm made a 68020
+simulator, though it took about a million Sun-3 instructions to simulate one
+68020 instruction. That executability was the main defence of the
+specification's accuracy. It was tested against real hardware (Ken Albin at
+Computational Logic built a test suite) as well as read critically.</p>
+<p><strong>How they proved programs.</strong> A correctness theorem for a machine-code
+program has the form</p>
+<div class="highlight"><pre><span></span><code>p-statep(s)  ⟹  p-req(s, stepn(s, p-t(s)))
+</code></pre></div>
+<p>That is: if the initial state satisfies the precondition (user mode, an even
+pc, the program loaded at the pc, enough stack, and the arguments meet the
+function's requirements), then after <code>p-t(s)</code> instructions the state satisfies
+the requirement. Proofs are symbolic execution of <code>stepn</code> by Nqthm's
+rewriter, plus induction for loops.</p>
+<p>None of this was push-button. It rests on a library of about 1,500 lemmas
+(about 250 KB, 140 pages) that teach the rewriter how to simplify <code>head</code>,
+<code>add</code>, memory reads and writes after other writes, address-disjointness, and
+so on. The thesis calls that library the most time-consuming part of about
+three years of work. With it, they proved GCC output for binary search,
+Quicksort and 21 of the 22 Berkeley C string functions correct, along with
+programs from the Verdix Ada and AKCL Common Lisp compilers.</p>
+<h2 id="why-something-modern-and-smt-based">Why something modern and SMT-based<a class="headerlink" href="#why-something-modern-and-smt-based" title="Permanent link">&para;</a></h2>
+<p>The question this project asks is narrower than Yu's, and it suits a
+decision procedure:</p>
+<ul>
+<li><strong>It is a bounded question.</strong> We want to prove that the core's
+  translation of each 68k instruction is right: a PLA template or uop flow
+  produces the same registers, flags, pc and memory as the instruction, for
+  every operand value. That is equivalence of two fixed-width bit-vector
+  functions of a single step. There are no loops and no unbounded data, so it
+  needs no induction. An SMT solver (z3) decides it automatically. Nqthm would
+  need a hand-built lemma library to get through each kind of instruction.</li>
+<li><strong>It finds bugs.</strong> When an equivalence fails, z3 returns concrete operand
+  values that show the difference. A failed Nqthm proof leaves the user to
+  work out whether a lemma is missing or the theorem is false.</li>
+<li><strong>The bit-level arithmetic is native.</strong> z3's bit-vector theory reasons
+  about <code>extract</code>, carries and two's complement directly. The 1992 model had
+  to build these from natural numbers and prove lemmas about them.</li>
+<li><strong>It fits the tools already in use.</strong> uisa's op semantics are already
+  compiled to z3 terms (<code>tools/gen_smt.py</code>). Both sides of the equivalence
+  then live in one solver.</li>
+<li><strong>The lemmas don't carry over.</strong> Nqthm is effectively retired; ACL2 is
+  its successor. The 1,500 lemmas were written to steer Nqthm's rewriter, and
+  even a port to ACL2 would have to redo most of them. The specification
+  itself is the lasting part.</li>
+</ul>
+<p>SMT does not replace theorem proving everywhere. Properties over loops or
+unbounded memory, such as "this millicode routine terminates" or proofs of
+whole programs like Yu's, still need induction (ACL2 or Isabelle, for
+example). For per-instruction equivalence, the bounded half of the problem,
+SMT is the right tool.</p>
+<h2 id="the-semantics-are-reusable-under-a-different-modelling-approach">The semantics are reusable under a different modelling approach<a class="headerlink" href="#the-semantics-are-reusable-under-a-different-modelling-approach" title="Permanent link">&para;</a></h2>
+<p>Because Boyer and Yu wrote an interpreter, the specification says what each
+instruction does without committing to how anyone reasons about it. The same
+definitions can be run in different ways, and this repository runs them in
+two:</p>
+<ul>
+<li><strong>Concretely, exactly as written:</strong> Nqthm naturals, binary-tree memory with
+  protection maps. This is the reference.</li>
+<li><strong>Symbolically:</strong> registers, CCR and memory are bit-vector terms. Each
+  <code>if</code> whose condition depends on data becomes an if-then-else term, and the
+  result of one <code>stepi</code> is a set of SMT-LIB terms, one per register, the CCR,
+  the pc, memory and the status.</li>
+</ul>
+<p>Only the modelling layer changes. Every instruction's semantics, the
+effective-address calculation and the flag functions are Yu's text,
+interpreted unchanged. What we replaced:</p>
+<table>
+<thead>
+<tr>
+<th>Changed</th>
+<th>1992 model</th>
+<th>Here</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bit-level helpers (<code>head</code>, <code>tail</code>, <code>logand</code>, <code>logor</code>, <code>logeor</code>, <code>setn</code>)</td>
+<td>recursion over the bits of a natural</td>
+<td>native bit-vector <code>extract</code>, shifts and logic, giving the same values</td>
+</tr>
+<tr>
+<td>Byte-level memory access</td>
+<td>sparse binary trees with protection maps</td>
+<td>an SMT array of bytes over the instruction's own bytes; protection not modelled</td>
+</tr>
+<tr>
+<td>Numbers</td>
+<td>Nqthm naturals and integers</td>
+<td>exact bit-vector terms whose width grows as needed, so <code>add</code> on two 32-bit values is 33 bits until <code>head</code> truncates it; nothing wraps silently</td>
+</tr>
+</tbody>
+</table>
+<p>Because both modes run the same definitions, each checks the other. On about
+6,000 random instructions, the symbolic result, evaluated at random inputs,
+matches the unmodified definitions run concretely, in status, every register,
+pc, CCR and every memory byte. z3 then confirms it reads the printed SMT-LIB
+the same way the Python evaluator does. The check found one bug in the lift:
+a PC-relative operand can read the instruction's own extension words, which
+the first memory model missed.</p>
+<p>The same specification could move again, to ACL2 for induction proofs or to
+Sail as a published ISA model. Each would be a new interpretation of the same
+definitions, not a new specification.</p>
+<h2 id="sources">Sources<a class="headerlink" href="#sources" title="Permanent link">&para;</a></h2>
+<ul>
+<li>R. S. Boyer and Y. Yu, <em>A Formal Specification of Some User Mode
+  Instructions for the Motorola 68020</em>, UT Austin TR-92-04, 1992.
+  <a href="https://www.cs.utexas.edu/ftp/techreports/tr92-04.pdf">https://www.cs.utexas.edu/ftp/techreports/tr92-04.pdf</a></li>
+<li>Y. Yu, <em>Automated Proofs of Object Code for a Widely Used Microprocessor</em>,
+  PhD thesis, UT Austin, 1992 (TR-93-09).
+  <a href="https://www.cs.utexas.edu/ftp/techreports/tr93-09.pdf">https://www.cs.utexas.edu/ftp/techreports/tr93-09.pdf</a></li>
+<li>R. S. Boyer and Y. Yu, <em>Automated proofs of object code for a widely used
+  microprocessor</em>, JACM 43(1):166–192, 1996.</li>
+<li>The Nqthm-1992 examples, <code>examples/yu/</code>.
+  <a href="https://www.cs.utexas.edu/~boyer/nqthm-1992-examples.html">https://www.cs.utexas.edu/~boyer/nqthm-1992-examples.html</a></li>
+</ul>
+<hr />
+<p><em>Pulled from <a href="https://github.com/dsheffie/m68k-formal-spec/tree/1ea319d">dsheffie/m68k-formal-spec</a> 1ea319d.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "navigation.indexes", "navigation.tracking", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>

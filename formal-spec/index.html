@@ -16,7 +16,7 @@
         <link rel="prev" href="../q800sim/">
       
       
-        <link rel="next" href="../uisa/">
+        <link rel="next" href="background/">
       
       
         
@@ -320,16 +320,34 @@
   
   
   
-    <li class="md-nav__item md-nav__item--active">
+    
+    
       
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
+        
+          
+        
       
         
       
+    
+    
+    
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
           
+          <div class="md-nav__link md-nav__container">
+            <a href="./" class="md-nav__link md-nav__link--active">
+              
   
   
   <span class="md-ellipsis">
@@ -343,17 +361,43 @@
   
   
 
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+            </a>
+            
+              
+              <label class="md-nav__link md-nav__link--active" for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Formal spec
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="background/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Formal spec
+    Background
   
 
     
@@ -362,119 +406,13 @@
   
 
       </a>
-      
-        
+    </li>
+  
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#how-it-fits-the-project" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How it fits the project
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#mc68020-semantics-in-smt-lifted-from-boyer-yus-nqthm-spec" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MC68020 semantics in SMT, lifted from Boyer &amp; Yu's Nqthm spec
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="MC68020 semantics in SMT, lifted from Boyer &amp; Yu&#39;s Nqthm spec">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How it works
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#use" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Use
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#modelling-choices-that-differ-from-the-original" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Modelling choices that differ from the original
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#what-the-spec-covers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What the spec covers
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#boyer-yus-mc68020-specification-nqthm" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Boyer &amp; Yu's MC68020 specification (Nqthm)
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
+              
+            
+          </ul>
+        </nav>
       
     </li>
   
@@ -846,6 +784,8 @@
 instructions, for checking the core's translation of them. It is Robert S.
 Boyer and Yuan Yu's MC68020 specification in Nqthm (public domain), run
 directly in Python and lifted from there to SMT-LIB for z3.</p>
+<p><strong>Background:</strong> <a href="background/">how the 1992 semantics worked, why SMT, and reusing the
+semantics under a different modelling approach</a>.</p>
 <p><strong>Repository:</strong> <a href="https://github.com/dsheffie/m68k-formal-spec">github.com/dsheffie/m68k-formal-spec</a></p>
 <p><strong>Original sources:</strong></p>
 <ul>
@@ -876,6 +816,9 @@ instructions, the FPU), exceptions or the MMU.</p>
 <p>Input: <code>nqthm/mc20-1.events</code> from the Nqthm-1992 examples (<code>examples/yu/</code>), Boyer
 and Yu's formal specification of about 80% of the MC68020 user-mode instructions
 (public domain; TR-92-04). 573 <code>defn</code>s, ending in <code>stepi</code>.</p>
+<p>For how the 1992 model worked, why this project uses SMT instead, and how
+the same semantics carry over to a different modelling approach, see
+<a href="background/">BACKGROUND.md</a>.</p>
 <h3 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h3>
 <p><code>lift/nqthm.py</code> reads the event file and runs the definitions directly in Python.
 Nothing is translated by hand. It works in two modes:</p>
@@ -948,7 +891,7 @@ header, "Copyright (C) 1994 by Yuan Yu ... placed in the public domain").</p>
   microprocessor</em>, JACM 43(1), 1996.
 - Y. Yu, PhD thesis, UT Austin, 1992 (TR-93-09).</p>
 <hr />
-<p><em>Pulled from <a href="https://github.com/dsheffie/m68k-formal-spec/tree/7bfec47">dsheffie/m68k-formal-spec</a> 7bfec47.</em></p>
+<p><em>Pulled from <a href="https://github.com/dsheffie/m68k-formal-spec/tree/1ea319d">dsheffie/m68k-formal-spec</a> 1ea319d.</em></p>
 
 
 
