@@ -23,11 +23,13 @@ semantics under a different modelling approach](background.md).
 
 The core executes 68k instructions as [uisa](../uisa/index.md) micro-ops, and
 the common ones go through PLA templates
-([PLA flow coverage](../uisa/flows.md)). The planned use of this spec is a z3
-proof, for each 68k instruction, that its PLA template computes exactly what
-the spec says: the same registers, condition codes, PC and memory for every
-input. That proof is in progress and not done yet; what exists today is the
-lifted spec and its validation, described below.
+([PLA flow coverage](../uisa/flows.md)). This spec is what those flows are
+proved against: for one 68k instruction at a time, z3 proves that its flow
+computes exactly what the spec says, the same registers, condition codes, PC
+and memory for every input ([PLA flow proofs](pla.md)). A sweep of every flow
+where A7 is both an operand and moved by the instruction found two bugs,
+UNLK A7 and JSR through A7 ([worked examples](examples.md)). Proving every
+flow is still in progress.
 
 The spec is of the 68020's user-mode integer set, which the 68040 shares. It
 does not cover what millicode handles (bitfields, BCD, CAS/CAS2, supervisor
