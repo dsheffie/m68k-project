@@ -1,0 +1,1183 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A 68040 on an out-of-order core: the uisa micro-op ISA, its millicode and compiler, the core, and the q800sim reference simulator.">
+      
+      
+      
+        <link rel="canonical" href="https://dsheffie.github.io/m68k-project/formal-spec/examples/">
+      
+      
+        <link rel="prev" href="../pla/">
+      
+      
+        <link rel="next" href="../../uisa/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
+    
+    
+      
+        <title>Worked examples - Project m68k</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#what-the-pla-proofs-find-worked-examples" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Project m68k" class="md-header__button md-logo" aria-label="Project m68k" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Project m68k
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Worked examples
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Project m68k" class="md-nav__button md-logo" aria-label="Project m68k" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    Project m68k
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../q800sim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    q800sim
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formal spec
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Formal spec
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../background/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Background
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pla/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PLA flow proofs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worked examples
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worked examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bug-1-unlk-a7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug 1: UNLK A7
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bug-2-jsr-a7-and-jsr-d16a7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug 2: JSR (A7) and JSR d16(A7)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-a-passing-proof-looks-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What a passing proof looks like
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What a passing proof looks like">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-proof-with-the-multiply-abstracted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A proof with the multiply abstracted
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../uisa/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    uisa
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    uisa
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../uisa/rationale/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design rationale
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../uisa/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../uisa/flows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PLA flow coverage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../uisa/ucc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The ucc compiler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../uisa/softfloat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SoftFloat in millicode
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bug-1-unlk-a7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug 1: UNLK A7
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bug-2-jsr-a7-and-jsr-d16a7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug 2: JSR (A7) and JSR d16(A7)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-a-passing-proof-looks-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What a passing proof looks like
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What a passing proof looks like">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-proof-with-the-multiply-abstracted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A proof with the multiply abstracted
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="what-the-pla-proofs-find-worked-examples">What the PLA proofs find: worked examples<a class="headerlink" href="#what-the-pla-proofs-find-worked-examples" title="Permanent link">&para;</a></h1>
+<p>The 68k core does not run 68k instructions directly. Its front end decodes
+each instruction and expands it into a short <strong>flow</strong>: a sequence of
+micro-ops from the core's own instruction set (uisa). Most instructions get
+their flow from a table (the PLA). <code>pla/prove_pla</code> takes one 68k instruction
+and asks z3 whether its flow does exactly what Boyer and Yu's MC68020
+specification says. The question covers every possible value of the 16
+registers, the condition codes and memory, not a sample of inputs.</p>
+<p>A proof compares the whole visible result:</p>
+<ul>
+<li>d0-d7 and a0-a7;</li>
+<li>the pc, including where a jump goes;</li>
+<li>the condition codes X N Z V C;</li>
+<li>every memory byte outside the instruction itself.</li>
+</ul>
+<p>The answer is one of:</p>
+<ul>
+<li><code>PROVED</code>;</li>
+<li><code>CEX</code>, a counterexample: an input on which the two disagree;</li>
+<li><code>TIMEOUT</code>;</li>
+<li><code>NOTCMP</code>, when there is nothing to compare: an illegal encoding, or an
+  instruction outside the specification.</li>
+</ul>
+<p>A sweep over every flow where A7 is both an operand and moved by the
+instruction found two bugs: UNLK A7, and JSR through A7. The sweep covered
+35,511 instructions: A7 in either addressing mode, A7 as an index register,
+and LINK, UNLK, PEA, JSR, BSR and RTS. Everything else in it proved or was
+not comparable, including:</p>
+<ul>
+<li>LINK A7;</li>
+<li>PEA (A7) and PEA d16(A7);</li>
+<li>MOVE between A7 addressing modes;</li>
+<li>every indexed form.</li>
+</ul>
+<p>Both bugs went unnoticed through millions of randomly generated test
+instructions. Each is described below, followed by two passing proofs.</p>
+<h2 id="bug-1-unlk-a7">Bug 1: UNLK A7<a class="headerlink" href="#bug-1-unlk-a7" title="Permanent link">&para;</a></h2>
+<p><strong>The instruction.</strong> <code>UNLK An</code> (opword <code>4E58+n</code>) tears down a stack frame.
+The stack pointer gets An, then An is reloaded from the top of the stack,
+popping it. For <code>UNLK A7</code> (opword <code>4E5F</code>) the register being reloaded <em>is</em>
+the stack pointer.</p>
+<p><strong>What the specification says.</strong> Yu's definition:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">(</span><span class="nv">defn</span><span class="w"> </span><span class="nv">unlk-ins</span><span class="w"> </span><span class="p">(</span><span class="nv">an</span><span class="w"> </span><span class="nv">s</span><span class="p">)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="p">(</span><span class="k">let</span><span class="w"> </span><span class="p">((</span><span class="nv">sp</span><span class="w"> </span><span class="p">(</span><span class="nv">read-an</span><span class="w"> </span><span class="p">(</span><span class="nv">l</span><span class="p">)</span><span class="w"> </span><span class="nv">an</span><span class="w"> </span><span class="nv">s</span><span class="p">)))</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="p">(</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nv">long-readp</span><span class="w"> </span><span class="nv">sp</span><span class="w"> </span><span class="p">(</span><span class="nv">mc-mem</span><span class="w"> </span><span class="nv">s</span><span class="p">))</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">        </span><span class="p">(</span><span class="nv">write-an</span><span class="w"> </span><span class="p">(</span><span class="nv">l</span><span class="p">)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">                  </span><span class="p">(</span><span class="nv">long-read</span><span class="w"> </span><span class="nv">sp</span><span class="w"> </span><span class="p">(</span><span class="nv">mc-mem</span><span class="w"> </span><span class="nv">s</span><span class="p">))</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">                  </span><span class="nv">an</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">                  </span><span class="p">(</span><span class="nv">write-sp</span><span class="w"> </span><span class="p">(</span><span class="nv">add</span><span class="w"> </span><span class="p">(</span><span class="nv">l</span><span class="p">)</span><span class="w"> </span><span class="nv">sp</span><span class="w"> </span><span class="p">(</span><span class="nv">lsz</span><span class="p">))</span><span class="w"> </span><span class="nv">s</span><span class="p">))</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">      </span><span class="p">(</span><span class="nv">halt</span><span class="w"> </span><span class="p">(</span><span class="nv">read-signal</span><span class="p">)</span><span class="w"> </span><span class="nv">s</span><span class="p">))))</span>
+</code></pre></div>
+<p>The stack pointer is set to <code>An + 4</code> first. Then An is written with the long
+at the old An. For A7, the long read from memory is written last, so it is
+the final A7. A reference simulator of the 68040 does the same.</p>
+<p><strong>The flow, before the fix.</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>add    a7, a7, x0       ; SP &lt;- An
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>ld.32  a7, 0(a7)        ; An &lt;- (SP)
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>addi   a7, a7, 4        ; SP &lt;- SP + 4
+</code></pre></div>
+<p>This order is right for every other An, but for A7 the <code>+ 4</code> runs after the
+load and lands on top of the loaded value.</p>
+<p><strong>The counterexample.</strong> z3 can pick any inputs, or we can pin them with
+<code>-p</code> to get a readable one:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$ prove_pla -v -p a7=0x2000 -p m32@0x2000=0x3000 unlk_a7.smt2 4e5f
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>counterexample for a7:
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>  a7 = #x00002000
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>  ccr = #x00
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>  spec #x00003000 flow #x00003004
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>CEX a7
+</code></pre></div>
+<p>(<code>-v</code> prints every input register; the ones that are 0 are left out here.)</p>
+<p>A7 starts at 0x2000 and the long at 0x2000 is 0x3000. The specification
+gives A7 = 0x3000; the flow gives 0x3004.</p>
+<p><strong>Why random testing missed it.</strong> The random test generator runs each
+candidate instruction on the reference model and keeps it only if the
+machine stays sane. One rule of sanity is that the stack pointer points into
+data memory, so an interrupt can always push a frame.</p>
+<p><code>UNLK A7</code> loads A7 from whatever long is in memory, which is almost never a
+sane stack address. The generator threw it away essentially every time.
+Compiled code never uses it either: compilers unlink with the frame pointer
+(<code>UNLK A6</code>), which was correct all along.</p>
+<p><strong>The fix.</strong> Do the <code>+ 4</code> before the load, and load from <code>-4(a7)</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>add    a7, a7, x0       ; SP &lt;- An
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>addi   a7, a7, 4        ; SP &lt;- An + 4
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>ld.32  a7, -4(a7)       ; An &lt;- (old An): the last write
+</code></pre></div>
+<p><strong>After the fix</strong>, with the same pins and with none:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>$ prove_pla -p a7=0x2000 -p m32@0x2000=0x3000 unlk_a7.smt2 4e5f
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>PROVED
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>$ prove_pla unlk_a7.smt2 4e5f
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>PROVED
+</code></pre></div>
+<h2 id="bug-2-jsr-a7-and-jsr-d16a7">Bug 2: JSR (A7) and JSR d16(A7)<a class="headerlink" href="#bug-2-jsr-a7-and-jsr-d16a7" title="Permanent link">&para;</a></h2>
+<p><strong>The instruction.</strong> <code>JSR &lt;ea&gt;</code> pushes the return address and jumps to the
+effective address. With <code>(A7)</code> or <code>d16(A7)</code> the address is computed from the
+stack pointer, which the push itself changes.</p>
+<p><strong>What the specification says.</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">(</span><span class="nv">defn</span><span class="w"> </span><span class="nv">jsr-ins</span><span class="w"> </span><span class="p">(</span><span class="nv">ins</span><span class="w"> </span><span class="nv">s</span><span class="p">)</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="p">(</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nv">jsr-addr-modep</span><span class="w"> </span><span class="nv">ins</span><span class="p">)</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">      </span><span class="p">(</span><span class="k">let</span><span class="w"> </span><span class="p">((</span><span class="nv">s&amp;addr</span><span class="w"> </span><span class="p">(</span><span class="nv">effec-addr</span><span class="w"> </span><span class="p">(</span><span class="nv">l</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nv">s_mode</span><span class="w"> </span><span class="nv">ins</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nv">s_rn</span><span class="w"> </span><span class="nv">ins</span><span class="p">)</span><span class="w"> </span><span class="nv">s</span><span class="p">)))</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">        </span><span class="p">(</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nv">mc-haltp</span><span class="w"> </span><span class="p">(</span><span class="nb">car</span><span class="w"> </span><span class="nv">s&amp;addr</span><span class="p">))</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">            </span><span class="p">(</span><span class="nb">car</span><span class="w"> </span><span class="nv">s&amp;addr</span><span class="p">)</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">          </span><span class="p">(</span><span class="nv">jmp-mapping</span><span class="w"> </span><span class="p">(</span><span class="nb">cddr</span><span class="w"> </span><span class="nv">s&amp;addr</span><span class="p">)</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">                       </span><span class="p">(</span><span class="nv">push-sp</span><span class="w"> </span><span class="p">(</span><span class="nv">lsz</span><span class="p">)</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">                                </span><span class="p">(</span><span class="nv">mc-pc</span><span class="w"> </span><span class="p">(</span><span class="nb">car</span><span class="w"> </span><span class="nv">s&amp;addr</span><span class="p">))</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">                                </span><span class="p">(</span><span class="nb">car</span><span class="w"> </span><span class="nv">s&amp;addr</span><span class="p">)))))</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="p">(</span><span class="nv">halt</span><span class="w"> </span><span class="p">(</span><span class="nv">mode-signal</span><span class="p">)</span><span class="w"> </span><span class="nv">s</span><span class="p">)))</span>
+</code></pre></div>
+<p>The effective address comes first (<code>effec-addr</code>), from the state before the
+push. Then the return address is pushed (<code>push-sp</code>), and the jump goes to
+the address computed first. The target is therefore the old A7 (plus d16).
+The reference simulator agrees.</p>
+<p><strong>The flow, before the fix.</strong> For <code>JSR (A7)</code> (opword <code>4E97</code>):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>gpushr a7, 2            ; A7 &lt;- A7 - 4; (A7) &lt;- return address
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>gjr    a7, 0            ; jump to A7
+</code></pre></div>
+<p>and for <code>JSR d16(A7)</code> (opword <code>4EAF</code>):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>gpushr a7, 4
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>gjr    a7, {d16}
+</code></pre></div>
+<p>The jump reads A7 after the push has moved it down by 4.</p>
+<p><strong>The counterexample.</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>$ prove_pla -v -p a7=0x2000 jsr_a7.smt2 4e97
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>counterexample for pc:
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>  a7 = #x00002000
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>  ccr = #x00
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>  spec #x00002000 flow #x00001ffc
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>CEX pc
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>$ prove_pla -v -p a7=0x2000 jsr_d16_a7.smt2 4eaf ffff
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>counterexample for pc:
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>  a7 = #x00002000
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>  ccr = #x00
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>  spec #x00001fff flow #x00001ffb
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>CEX pc
+</code></pre></div>
+<p>The specification jumps to 0x2000; the flow jumps to 0x1ffc, into the return
+address it just pushed. With <code>JSR -1(A7)</code> (d16 = <code>FFFF</code>) the target should
+be 0x1fff; the flow again lands 4 bytes low. The indexed
+form <code>JSR (d8,A7,Xn)</code> was already right, because its address is computed
+into a temporary before the push.</p>
+<p><strong>Why random testing missed it.</strong> The target of <code>JSR (A7)</code> has to be code,
+but A7 has to be a stack in data memory, and the generator keeps code and
+data apart. A program that jumps to its own stack pointer could not be
+generated, and no compiler produces one.</p>
+<p><strong>The fix.</strong> For these two forms only, compute the target into a temporary
+first:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>add    x27, a7, x0      ; (addi x27, a7, d16 for d16(A7))
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>gpushr a7, 2
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>gjr    x27, 0
+</code></pre></div>
+<p>Every other JSR keeps its two-uop flow.</p>
+<p><strong>After the fix</strong>, all 132 comparable JSR and UNLK instances in the sweep
+prove, these included:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>$ prove_pla jsr_a7.smt2 4e97
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>PROVED
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>$ prove_pla jsr_d16_a7.smt2 4eaf ffff
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>PROVED
+</code></pre></div>
+<p><strong>On the core.</strong> Each bug now has a directed test that fails on the old core
+and passes on the fixed one:</p>
+<ul>
+<li>the UNLK test stops when A7 disagrees with the reference by 4;</li>
+<li>the JSR tests stop when the core retires an instruction at the target
+  minus 4.</li>
+</ul>
+<p>The random generator now builds these forms on purpose:</p>
+<ul>
+<li><code>MOVE.L A7,-(A7)</code> + <code>UNLK A7</code>;</li>
+<li><code>LINK A7,#0</code> + <code>UNLK A7</code>;</li>
+<li><code>PEA (A7)</code> / <code>PEA d16(A7)</code>;</li>
+<li><code>JSR (A7)</code> / <code>JSR d16(A7)</code> into a routine in the code, with the return
+  address pushed into junk words just before it.</li>
+</ul>
+<p>A copy of the core with each bug put back fails its directed test and every
+generated program.</p>
+<h2 id="what-a-passing-proof-looks-like">What a passing proof looks like<a class="headerlink" href="#what-a-passing-proof-looks-like" title="Permanent link">&para;</a></h2>
+<p><code>ADD.L 16(A0),D1</code> (<code>D2A8 0010</code>): the flow loads the long at A0+16, adds it to
+D1 and sets X N Z V C.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>$ prove_pla add.smt2 d2a8 0010
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>PROVED
+</code></pre></div>
+<p>That one line is a statement about every possible input: no value of A0, D1,
+the condition codes or the memory at A0+16 makes the flow and the
+specification differ in any register, flag, memory byte or the next pc.</p>
+<h3 id="a-proof-with-the-multiply-abstracted">A proof with the multiply abstracted<a class="headerlink" href="#a-proof-with-the-multiply-abstracted" title="Permanent link">&para;</a></h3>
+<p><code>MULS.W (A0)+,D1</code> (<code>C3D8</code>): load a word, bump A0 by 2, and multiply 16 x 16
+-&gt; 32, signed.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>$ prove_pla muls.smt2 c3d8
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>PROVED abstracted: mul16s,mul32s
+</code></pre></div>
+<p>z3 is poor at showing that two different multiplier circuits compute the
+same product. Yu's specification multiplies the magnitudes and fixes the
+sign afterwards; the flow does one two's-complement multiply at another
+width. Without the abstraction, z3 did not finish this instruction in an
+hour.</p>
+<p>The abstraction gives both sides the same unnamed function <code>mul16s(a, b)</code>
+for "the 32-bit product of two 16-bit signed numbers". Before replacing a
+multiply, the prover proves that each operand really is a sign-extended
+16-bit value. Then z3 only has to show that both sides apply the same
+function to the same operands.</p>
+<p><strong>What it checks:</strong></p>
+<ul>
+<li>which bytes are loaded;</li>
+<li>the address-register update;</li>
+<li>that the operands are sign-extended, not zero-extended;</li>
+<li>which register gets the product;</li>
+<li>the flags;</li>
+<li>the writeback.</li>
+</ul>
+<p>A flow that used MULU instead of MULS, or multiplied the wrong register,
+still fails. That was tested: the unsigned flow against the signed spec
+gives a counterexample.</p>
+<p><strong>What it does not check</strong> is the multiplier itself: that <code>mul16s</code> really
+multiplies. Two things cover that instead:</p>
+<ul>
+<li>The specification's sign-magnitude multiply is replaced by a
+  two's-complement one in the lift. That replacement is checked against
+  Yu's unmodified definitions, run concretely, on hundreds of random
+  MULU/MULS/DIVU/DIVS instructions.</li>
+<li>The core's multiplier is tested by the co-simulation.</li>
+</ul>
+<p>Divide is handled the same way (<code>div32_16s</code>, <code>rem32_16u</code>, ...). Every result
+that used the abstraction says so, so it is always visible which products
+and quotients were not checked bit for bit.</p>
+<hr />
+<p><em>Pulled from <a href="https://github.com/dsheffie/m68k-formal-spec/tree/cf18996">dsheffie/m68k-formal-spec</a> cf18996.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "navigation.indexes", "navigation.tracking", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>

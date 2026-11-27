@@ -2,46 +2,54 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://dsheffie.github.io/m68k-project/</loc>
-         <lastmod>2026-11-26</lastmod>
+         <lastmod>2026-11-27</lastmod>
     </url>
     <url>
          <loc>https://dsheffie.github.io/m68k-project/core/</loc>
-         <lastmod>2026-11-26</lastmod>
+         <lastmod>2026-11-27</lastmod>
     </url>
     <url>
          <loc>https://dsheffie.github.io/m68k-project/q800sim/</loc>
-         <lastmod>2026-11-26</lastmod>
+         <lastmod>2026-11-27</lastmod>
     </url>
     <url>
          <loc>https://dsheffie.github.io/m68k-project/formal-spec/</loc>
-         <lastmod>2026-11-26</lastmod>
+         <lastmod>2026-11-27</lastmod>
     </url>
     <url>
          <loc>https://dsheffie.github.io/m68k-project/formal-spec/background/</loc>
-         <lastmod>2026-11-26</lastmod>
+         <lastmod>2026-11-27</lastmod>
+    </url>
+    <url>
+         <loc>https://dsheffie.github.io/m68k-project/formal-spec/examples/</loc>
+         <lastmod>2026-11-27</lastmod>
+    </url>
+    <url>
+         <loc>https://dsheffie.github.io/m68k-project/formal-spec/pla/</loc>
+         <lastmod>2026-11-27</lastmod>
     </url>
     <url>
          <loc>https://dsheffie.github.io/m68k-project/uisa/</loc>
-         <lastmod>2026-11-26</lastmod>
+         <lastmod>2026-11-27</lastmod>
     </url>
     <url>
          <loc>https://dsheffie.github.io/m68k-project/uisa/flows/</loc>
-         <lastmod>2026-11-26</lastmod>
+         <lastmod>2026-11-27</lastmod>
     </url>
     <url>
          <loc>https://dsheffie.github.io/m68k-project/uisa/rationale/</loc>
-         <lastmod>2026-11-26</lastmod>
+         <lastmod>2026-11-27</lastmod>
     </url>
     <url>
          <loc>https://dsheffie.github.io/m68k-project/uisa/reference/</loc>
-         <lastmod>2026-11-26</lastmod>
+         <lastmod>2026-11-27</lastmod>
     </url>
     <url>
          <loc>https://dsheffie.github.io/m68k-project/uisa/softfloat/</loc>
-         <lastmod>2026-11-26</lastmod>
+         <lastmod>2026-11-27</lastmod>
     </url>
     <url>
          <loc>https://dsheffie.github.io/m68k-project/uisa/ucc/</loc>
-         <lastmod>2026-11-26</lastmod>
+         <lastmod>2026-11-27</lastmod>
     </url>
 </urlset>
