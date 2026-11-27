@@ -6,3 +6,24 @@
   overflow-wrap: normal;
   white-space: pre-wrap;
 }
+
+/* Core block diagram (docs/core.md): inline SVG drawn with the theme's
+   colours, so it follows the light/dark toggle. */
+.md-typeset .core-fig { margin: 1.5em 0; width: 100%; display: block; }
+.core-fig svg { width: 100%; height: auto; display: block;
+  font-family: var(--md-text-font-family, sans-serif); }
+.core-fig text { fill: var(--md-default-fg-color); font-size: 12px; }
+.core-fig .t { font-weight: 700; font-size: 13px; }
+.core-fig .s { fill: var(--md-default-fg-color--light); font-size: 11.5px; }
+.core-fig .box { fill: var(--md-code-bg-color); stroke: var(--md-default-fg-color--light); stroke-width: 1.2; }
+.core-fig .rtl { stroke: var(--md-primary-fg-color); stroke-width: 2.2; }
+.core-fig .cxx { fill: var(--md-code-bg-color); stroke: var(--md-default-fg-color--lighter);
+  stroke-width: 1.2; stroke-dasharray: 5 3; }
+.core-fig .fe { fill: none; stroke: var(--md-accent-fg-color); stroke-width: 1.6; stroke-dasharray: 8 5; }
+.core-fig .wire { fill: none; stroke: var(--md-default-fg-color--light); stroke-width: 1.5;
+  marker-end: url(#core-arr); }
+.core-fig .dash { stroke-dasharray: 4 3; }
+.core-fig .bus { fill: none; stroke: var(--md-default-fg-color--light); stroke-width: 1.5; }
+.core-fig .head { fill: var(--md-default-fg-color--light); }
+.md-typeset .core-fig figcaption { max-width: none; font-style: normal; font-size: .7rem;
+  color: var(--md-default-fg-color--light); text-align: left; margin-top: .6em; }
