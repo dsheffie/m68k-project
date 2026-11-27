@@ -860,8 +860,8 @@
 
 <h1 id="the-68k-pla-flows-against-the-lifted-mc68020-spec">The 68k PLA flows against the lifted MC68020 spec<a class="headerlink" href="#the-68k-pla-flows-against-the-lifted-mc68020-spec" title="Permanent link">&para;</a></h1>
 <p>The 68k front end (<code>m68k</code>, <code>gen_pla68k.py</code>) expands most opwords into a PLA
-flow: a few uisa uops. This directory has z3 prove, one instruction at a
-time, that the flow does what Yu's MC68020 spec (<code>../lift</code>) does. The proof
+flow: a few uisa uops. This directory proves, one instruction at a time,
+that the flow does what Yu's MC68020 spec (<code>../lift</code>) does. The proof
 covers every value of d0-d7, a0-a7, the CCR and memory, for the given
 extension words.</p>
 <h2 id="what-is-compared">What is compared<a class="headerlink" href="#what-is-compared" title="Permanent link">&para;</a></h2>
@@ -883,6 +883,15 @@ extension words.</p>
   X N Z V C, and memory. Memory is compared by one free address outside the
   code overlay. Both sides read the instruction's own bytes from the overlay
   first, as the lift does. The input CCR's bits 7:5 are 0.</li>
+<li><strong>The solvers:</strong> z3's API builds every term (the lift is read with z3's
+  SMT-LIB parser, the flow is executed into z3 terms, the abstraction lemmas
+  below are z3 checks). Each query is then decided by Bitwuzla, in-process
+  through its C++ parser on the query's SMT-LIB text. On these queries
+  Bitwuzla is much faster than z3 (DIVS.W <code>#imm</code> 4-7 s against 33-220 s;
+  MULS.W with no abstraction 70 s, where z3 gives up after 10 minutes).
+  Bitwuzla answers sat or unsat only, so a counterexample's model comes from
+  z3. <code>PROVE_SOLVER=z3</code> decides with z3 instead; <code>PROVE_DUMP=DIR</code> writes each
+  query to <code>DIR/&lt;output&gt;.smt2</code> for running other solvers.</li>
 <li><strong>Halts:</strong> a uisa guest op's trap (a zero divide) must happen exactly
   where the spec halts with <code>trap-exception</code>. Inputs where the spec halts
   for any other reason (<code>divu-overflow</code>, <code>divs-overflow</code>: the spec leaves
@@ -890,9 +899,10 @@ extension words.</p>
   so.</li>
 </ul>
 <h2 id="multiply-and-divide">Multiply and divide<a class="headerlink" href="#multiply-and-divide" title="Permanent link">&para;</a></h2>
-<p>z3 cannot prove two different multiplier (or divider) circuits equal in
-useful time: the six MULU/MULS.W fast-path instructions ran out an hour each.
-The multiplier is not where a flow goes wrong, so the proofs abstract it:</p>
+<p>Proving two different multiplier (or divider) circuits equal is hard for
+any bit-blasting solver: z3 ran out an hour on each of the six MULU/MULS.W
+fast-path instructions, and Bitwuzla takes about a minute on one. The
+multiplier is not where a flow goes wrong, so the proofs abstract it:</p>
 <ul>
 <li><strong>The lift</strong> (<code>../lift/nqthm.py</code>, symbolic overrides): Yu's <code>itimes</code>,
   <code>iquotient</code> and <code>iremainder</code> build a sign-magnitude result (several
@@ -906,17 +916,19 @@ The multiplier is not where a flow goes wrong, so the proofs abstract it:</p>
   32-bit divisor becomes <code>div32_k{s,u}</code> / <code>rem32_k{s,u}</code>, with SMT-LIB's zero
   divisor result written out. Each operand's extension is first proved as a
   lemma, so the replacement is exact; multiplies and divides by a constant are
-  left bit-level. z3 then proves everything around the multiplier: operand
+  left bit-level. The solver then proves everything around the multiplier: operand
   selection, extension, which half lands where, the flags, writeback.</li>
 <li>A counterexample under the abstraction is reported only if the original
-  terms agree with its model; otherwise it is a <code>TIMEOUT</code>.</li>
+  terms agree with its model. Otherwise that output is decided again
+  bit-level, without the abstraction (with <code>PROVE_SOLVER=z3</code> it is a
+  <code>TIMEOUT</code> instead).</li>
 <li>A result that used the abstraction says <code>abstracted: &lt;functions&gt;</code>: that
   instruction's product or quotient was not checked bit-level.
   <code>PROVE_NO_ABSTRACT=1</code> turns the pass off.</li>
 </ul>
 <p>The user state is SR = 0 (user, interrupt level 0), the pc is the lift's
-<code>CODE</code> (0x00F01000), and z3 has a 60 s timeout per query (<code>PROVE_TIMEOUT_MS</code>; <code>run_pla.py</code> passes
-30 s).</p>
+<code>CODE</code> (0x00F01000), and each query has a 60 s limit (<code>PROVE_TIMEOUT_MS</code>;
+<code>run_pla.py</code> passes 30 s).</p>
 <h2 id="results">Results<a class="headerlink" href="#results" title="Permanent link">&para;</a></h2>
 <p><code>prove_pla LIFT.smt2 HEX...</code> prints one of:</p>
 <ul>
@@ -945,10 +957,11 @@ The multiplier is not where a flow goes wrong, so the proofs abstract it:</p>
 </ul>
 <p>The generators find the uisa checkout and the front end's opword map through
 <code>UISA_DIR</code> and <code>PLA_FMAP</code> (<code>paths.py</code>; the defaults are the sibling checkouts
-<code>../../uisa</code> and <code>../../m68k</code>). The Makefile takes <code>UISA</code> and <code>Z3</code>.</p>
+<code>../../uisa</code> and <code>../../m68k</code>). The Makefile takes <code>UISA</code>, <code>Z3</code> and <code>BZLA</code> (the z3 and Bitwuzla install
+prefixes; both default to <code>/opt/homebrew</code>).</p>
 <p>See <a href="../examples/">../EXAMPLES.md</a> for worked examples.</p>
 <hr />
-<p><em>Pulled from <a href="https://github.com/dsheffie/m68k-formal-spec/tree/e4c6d37">dsheffie/m68k-formal-spec</a> e4c6d37.</em></p>
+<p><em>Pulled from <a href="https://github.com/dsheffie/m68k-formal-spec/tree/25c78ca">dsheffie/m68k-formal-spec</a> 25c78ca.</em></p>
 
 
 

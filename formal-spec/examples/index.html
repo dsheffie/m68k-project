@@ -897,8 +897,8 @@
 each instruction and expands it into a short <strong>flow</strong>: a sequence of
 micro-ops from the core's own instruction set (uisa). Most instructions get
 their flow from a table (the PLA). <code>pla/prove_pla</code> takes one 68k instruction
-and asks z3 whether its flow does exactly what Boyer and Yu's MC68020
-specification says. The question covers every possible value of the 16
+and asks an SMT solver (Bitwuzla, with the terms built in z3) whether its
+flow does exactly what Boyer and Yu's MC68020 specification says. The question covers every possible value of the 16
 registers, the condition codes and memory, not a sample of inputs.</p>
 <p>A proof compares the whole visible result:</p>
 <ul>
@@ -953,7 +953,7 @@ the final A7. A reference simulator of the 68040 does the same.</p>
 </code></pre></div>
 <p>This order is right for every other An, but for A7 the <code>+ 4</code> runs after the
 load and lands on top of the loaded value.</p>
-<p><strong>The counterexample.</strong> z3 can pick any inputs, or we can pin them with
+<p><strong>The counterexample.</strong> The solver can pick any inputs, or we can pin them with
 <code>-p</code> to get a readable one:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$ prove_pla -v -p a7=0x2000 -p m32@0x2000=0x3000 unlk_a7.smt2 4e5f
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>counterexample for a7:
@@ -1082,15 +1082,16 @@ specification differ in any register, flag, memory byte or the next pc.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>$ prove_pla muls.smt2 c3d8
 <a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>PROVED abstracted: mul16s,mul32s
 </code></pre></div>
-<p>z3 is poor at showing that two different multiplier circuits compute the
-same product. Yu's specification multiplies the magnitudes and fixes the
-sign afterwards; the flow does one two's-complement multiply at another
-width. Without the abstraction, z3 did not finish this instruction in an
-hour.</p>
+<p>SMT solvers are poor at showing that two different multiplier circuits
+compute the same product. Yu's specification multiplies the magnitudes and
+fixes the sign afterwards; the flow does one two's-complement multiply at
+another width. Without the abstraction, z3 did not finish this instruction
+in an hour, and Bitwuzla takes about a minute; with it, both take a
+fraction of a second.</p>
 <p>The abstraction gives both sides the same unnamed function <code>mul16s(a, b)</code>
 for "the 32-bit product of two 16-bit signed numbers". Before replacing a
 multiply, the prover proves that each operand really is a sign-extended
-16-bit value. Then z3 only has to show that both sides apply the same
+16-bit value. Then the solver only has to show that both sides apply the same
 function to the same operands.</p>
 <p><strong>What it checks:</strong></p>
 <ul>
@@ -1117,7 +1118,7 @@ multiplies. Two things cover that instead:</p>
 that used the abstraction says so, so it is always visible which products
 and quotients were not checked bit for bit.</p>
 <hr />
-<p><em>Pulled from <a href="https://github.com/dsheffie/m68k-formal-spec/tree/e4c6d37">dsheffie/m68k-formal-spec</a> e4c6d37.</em></p>
+<p><em>Pulled from <a href="https://github.com/dsheffie/m68k-formal-spec/tree/25c78ca">dsheffie/m68k-formal-spec</a> 25c78ca.</em></p>
 
 
 
